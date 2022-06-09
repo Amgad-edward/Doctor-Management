@@ -1,0 +1,53 @@
+﻿
+@model AverageView
+@{ 
+    ViewData["Title"] = $"Average Checks - {Model.Name}";
+}
+
+<div class="mt-5">
+    <h4 class="text-dark"><i class="bi bi-file-earmark-person"></i> @Hex.ConvertName(Model.Name)</h4>
+    <p><em>Char Average Of check</em></p>
+</div>
+
+@if(Model.Avg_Views.Count > 0)
+{
+    foreach (var item in Model.Avg_Views)
+    {
+        <div class="row">
+            <div class="col-md-4">
+                <h4>@item.Name : </h4>
+            </div>
+            <div class="col-md-4">
+                <h4 class="@(item.normals.HasValue && item.Results <= item.normals.Value ? "text-success":"text-danger")">@item.Results</h4>
+            </div>
+            <div class="col-md-4">
+                @if (item.normals.HasValue)
+                {
+                    if (item.Results == item.normals.Value)
+                    {
+                        <i class="bi bi-check2-all text-success display-3"></i>
+                    }
+                    else if (item.Results < item.normals.Value)
+                    {
+                        <i class="bi bi-arrow-down display-3 text-primary"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-arrow-up display-3 text-danger"></i>
+                    }
+                }
+            </div>
+        </div>
+       <hr />
+    }
+
+
+}
+else
+{
+<div>
+    <div class="alert alert-light text-center" role="alert">
+        No Average
+    </div>
+</div>
+}

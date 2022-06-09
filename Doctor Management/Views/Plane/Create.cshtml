@@ -1,0 +1,118 @@
+﻿@model List<PlaneView>
+@{
+    ViewData["Title"] = "Add Plane To time span";
+}
+
+<h3>Create Plane</h3>
+
+<div class="card">
+    <div class="card-header">
+        Add Plane To Time span
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Select Time Span From To date</h5>
+         <form method="POST" asp-action="getdates">
+             <div class="row">
+                 <div class="col-4">
+                     From <input type="date" name="datefrom" required class="form-control"  />
+                 </div>
+                 <div class="col-4">
+                     To <input type="date" name="dateto" class="form-control" required />
+                 </div>
+                 <div class="col-2">
+                     <button type="submit" class="btn btn-primary">Get</button>
+                 </div>
+             </div>
+         </form>
+    </div>
+</div>
+<hr />
+
+@if(Model.Count > 0)
+{
+    <form method="POST" asp-action="Create">
+        
+         <table class="table table-bordered table-hover">
+             <thead class="thead-dark sticky-top">
+                 <tr>
+                     <th>Day</th>
+                     <th>Count Reveals</th>
+                     <th>All reveals</th>
+                     <th>Is Leave</th>
+                 </tr>
+             </thead>
+             <tbody>
+                 @for (int i = 0; i < Model.Count; i++)
+                 {
+                 <tr class="text-center">
+                     <td>
+                         <input asp-for="@Model[i].DateDay" type="date" hidden />
+                         <label>@Model[i].Day</label>
+                     </td>
+                     <td>
+                         <input type="number" asp-for="@Model[i].Count" class="form-control num"  min="0" />
+                     </td>
+                     <td>
+                         <input type="checkbox" asp-for="@Model[i].All" class="form-check-input jsall" />
+                     </td>
+                     <td>
+                         <input type="checkbox" asp-for="@Model[i].Leave" class="form-check-input jslevea" />
+                     </td>
+                 </tr>
+                 }
+             </tbody>
+
+         </table>
+        <button type="submit" class="btn btn-primary w-25">Save All</button>
+    </form>
+}
+
+
+
+@section Scripts{ 
+
+@{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+
+   <script>
+       $(document).ready(function () {
+
+           $('.jsall').change(function () {
+
+               let check = $(this).prop('checked');
+               let pr = $(this).parents();
+               let number = pr.children('td').children('.num');
+               let levean = pr.children('td').children('.jslevea');
+               if (check) {
+                   number.val(0);
+                   levean.prop('checked', false);
+      
+               }
+           });
+           $('.jslevea').change(function () {
+               let check = $(this).prop('checked');
+               let pr = $(this).parents();
+               let number = pr.children('td').children('.num');
+               let all = pr.children('td').children('.jsall');
+               if (check) {
+                   number.val(0);
+                   all.prop('checked', false);
+               }
+
+           });
+           $('.num').on('change', function () {
+               if ($(this).val() > 0) {
+                   let pr = $(this).parents();
+                   let levean = pr.children('td').children('.jslevea');
+                   let all = pr.children('td').children('.jsall');
+                   all.prop('checked', false);
+                   levean.prop('checked', false);
+               }
+
+           });
+
+       });
+
+   </script>
+
+}

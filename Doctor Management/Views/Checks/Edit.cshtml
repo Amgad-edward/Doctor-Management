@@ -1,0 +1,87 @@
+﻿
+@model ItemsCheckView
+@{ 
+    ViewData["Title"] = "";
+}
+ <h2>@(Model.create?"Create": "Edit") @Model.NameCheck </h2>
+ <p>@ViewBag.Name</p>
+
+
+ <form method="POST" asp-action="@(Model.create?"Create": "Edit")" enctype="multipart/form-data">
+     <div class="row">
+         <div class="col-md-4">
+             <input asp-for="Id" hidden />
+             <input asp-for="Idcustomer" hidden />
+             <input asp-for="Idreveal" hidden />
+             <div class="row">
+                 <div class="col-md-10 n">
+                     <div class="form-group">
+                         <label asp-for="NameCheck"></label>
+                         @if (Model.create)
+                         {
+                             <input type="text" asp-for="NameCheck" class="form-control" maxlength="40" />
+                         }
+                         else
+                         {
+                             <input type="text" asp-for="NameCheck" class="form-control" readonly maxlength="40" />
+                         }
+                         <span asp-validation-for="NameCheck" class="text-danger"></span>
+                     </div>
+                 </div>
+                 <div class="col-md-1 mt-4">
+                     <button type="button" id="btu" title="Edit Name" class="btn btn-outline-light text-info">
+                         <i class="bi bi-pencil-square"></i>
+                     </button>
+                 </div>
+
+             </div>
+             <div class="form-group">
+                 <label asp-for="Resulte"></label>
+                 <input type="number" asp-for="Resulte" class="form-control" />
+                 <span asp-validation-for="Resulte"></span>
+             </div>
+             <div class="custom-file mt-2 im">
+                 <input type="file" class="custom-file-input" asp-for="ImageReport" accept=".jpg,.png" />
+                 <label asp-for="ImageReport" class="custom-file-label"></label>
+                 <span asp-validation-for="ImageReport" class="text-danger"></span>
+             </div>
+             <button type="submit" class="btn btn-primary mt-4">
+                 <i class="bi bi-save"></i>
+                 Saved
+             </button>
+             <a class="btn btn-outline-dark mt-4" asp-action="Index" asp-route-id="@Model.Idreveal">
+                 Cancel
+                 <i class="bi bi-x"></i>
+             </a>
+         </div>
+         <div class="col-md-4 m">
+             <img src="@Hex.showimage(Model.ImageReport)"  alt="Image" class="img-thumbnail" />
+         </div>
+     </div>
+ </form>
+
+@section Scripts{ 
+ 
+@{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } 
+
+ <script>
+
+     $(document).ready(function () {
+
+         $('#btu').click(function () {
+             $('.n input').attr('readonly', false);
+         });
+
+         $('.im input').on('change', function () {
+             var file = window.URL.createObjectURL(this.files[0]);
+             let name = this.files[0].name;
+             $('.im Label').text(name);
+             $('.m img').attr('src', file);
+         });
+
+
+     });
+
+ </script>
+
+}

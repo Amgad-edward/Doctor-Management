@@ -1,0 +1,84 @@
+﻿@model PaysViewInput
+
+@{
+    ViewData["Title"] = "Edits";
+}
+
+<h3>Edit @Model.ToPay</h3>
+<hr />
+
+<form method="POST" asp-action="Edits">
+    <div class="row">
+        <div class="col-md-7">
+            <input asp-for="Id" hidden />
+            <div class="form-group">
+                <label asp-for="Idfixed_pay"></label>
+                <select class="form-control js" asp-for="Idfixed_pay" asp-items="@Model.ListFiex">
+                    <option selected></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label asp-for="ToPay"></label>
+                <input type="text" class="form-control acc" placeholder="To Account" asp-for="ToPay" />
+                <span asp-validation-for="ToPay" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Amount"></label>
+                <input type="number" min="1" class="form-control am" asp-for="Amount" />
+                <span asp-validation-for="Amount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Date"></label>
+                <input type="date" min="1" class="form-control" asp-for="Date" />
+                <span asp-validation-for="Date" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Save</button>
+            <a class="btn btn-outline-secondary mt-1" asp-action="Index">Cancel</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts{
+
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+
+    <script>
+
+    $(document).ready(function () {
+
+        $('.js').change(function (e) {
+            let id = $(this).val();
+            let row = $(this).parents('.col-md-7');
+            let Acc = row.children('.form-group').children('.acc');
+            let Amounts = row.children('.form-group').children('.am');
+
+            if (id != "") {
+                $.ajax({
+                    url: '/Pays/getfixe/' + id,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        Acc.val(data.itemName);
+                        Amounts.val(data.fixsedAmmount);
+                        console.log(data);
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+            }
+            else {
+                Acc.val("");
+                Amounts.val(0);
+            }
+
+        });
+
+    });
+
+
+    </script>
+
+
+}

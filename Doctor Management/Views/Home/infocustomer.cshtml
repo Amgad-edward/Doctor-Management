@@ -1,0 +1,101 @@
+﻿@model CustomerInfo
+
+@{
+    ViewData["Title"] = "info customer";
+    var Normal = (List<ResultNormal>)ViewBag.normal;
+}
+
+<h1>Infomation Customer</h1>
+<h4 class="text-black-50">@Model.Name</h4>
+<hr />
+<div class="card">
+    <div class="card-header">
+        <h6> Gender: @Model.Gender </h6>
+        <h6> Age: @Model.Age.ToString() Y</h6> 
+        <h6>Blood : @Model.Blood</h6>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Phones : @Model.Phones</h5>
+        @if (Model.Informations != null)
+        {
+            @foreach (var item in Model.Informations)
+            {
+                <p class="card-text">@item.Info</p>
+            }
+        }
+
+    </div>
+</div>
+
+@if (Model.IsInBlackList)
+{
+    <div class="alert alert-dark alert-dismissible fade show" role="alert">
+        <strong>Black List!</strong> @Model.GetReportBlackList
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+@if (Model.GetAllChecks != null)
+{
+    <hr />
+    var Checks = Model.GetAllChecks.Select(select => select.Idreveal).Distinct().ToList();
+    foreach (var item in Checks)
+    {
+        var checkups = Model.GetAllChecks.Where(x => x.Idreveal == item).ToList();
+        <div class="card" style="width: 18rem;">
+            <div class="card-header">
+                @checkups[0].reveal.DateReservation.ToDate()
+            </div>
+            <ul class="list-group list-group-flush">
+                @foreach (var c in checkups)
+                {
+                <li class="list-group-item">
+                    @c.NameCheck : @c.Resulte>
+                    @if (Normal.Any(x => x.Name.ToLower() == c.NameCheck.ToLower() && x.Gender.Contains(Model.Gender)))
+                    {
+                        var n = Normal.FirstOrDefault(x => x.Name.ToLower() == c.NameCheck.ToLower() && x.Gender.Contains(Model.Gender)).Normal;
+
+                        if (c.Resulte == n)
+                        {
+                            <i class="bi bi-check2-circle text-success"></i>
+                            <span>Normal : @n</span>
+                        }
+                        else if (c.Resulte < n)
+                        {
+                            <i class="bi bi-arrow-down"></i>
+                            <span>Normal : @n</span>
+                        }
+                        else if (c.Resulte > n)
+                        {
+                            <i class="bi bi-arrow-up text-danger"></i>
+                            <span>Normal : @n</span>
+                        }
+                    }
+                </li>
+                }
+
+            </ul>
+        </div>
+    }
+}
+
+@if (Model.AverageChecks.Count > 0)
+{
+    <hr />
+    <h3 class="text-black-50">Average</h3>
+    <div class="card" style="width: 18rem;">
+        <ul class="list-group list-group-flush">
+            @foreach (var item in Model.AverageChecks)
+            {
+            <li class="list-group-item">
+                @item.name : @item.Avr.ToString()
+               
+            </li>
+            }
+
+        </ul>
+    </div>
+}
+

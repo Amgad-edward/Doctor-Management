@@ -1,0 +1,86 @@
+﻿@model Doctor_Management.Models_View.PlaneView
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h2>Edit</h2>
+<h4>Plane View To Day @Model.DateDay.ToDate()</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input asp-for="Id" class="form-control" hidden />
+            <div class="form-group">
+                <label asp-for="DateDay" class="control-label"></label>
+                <input asp-for="DateDay" readonly class="form-control" />
+                <span asp-validation-for="DateDay" class="text-danger"></span>
+            </div>
+           
+            <div class="form-group">
+                <label asp-for="Count" class="control-label"></label>
+                <input type="number" min="0" asp-for="Count" class="form-control" />
+                <span asp-validation-for="Count" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="All" /> @Html.DisplayNameFor(model => model.All)
+                </label>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="Leave" /> @Html.DisplayNameFor(model => model.Leave)
+                </label>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+  <script>
+      $(document).ready(function () {
+          let allday = $('#All');
+          let Lev = $('#Leave');
+          let counts = $('#Count');
+          allday.change(function() {
+              if ($(this).prop('checked')) {
+                  Lev.prop('checked', false);
+                  counts.val('0');
+              }
+              else {
+
+              }
+           });
+
+          Lev.change(function () {
+              if ($(this).prop('checked')) {
+                  allday.prop('checked', false);
+                  counts.val('0');
+              }
+          });
+          counts.change(function() {
+              if ($(this).val() > 0) {
+                  allday.prop('checked', false);
+                  Lev.prop('checked', false);
+              }
+          });
+          counts.keydown((e) => {
+              let boolean = true;
+              if (e.keyCode == 13) {
+                  boolean = false;
+              }
+              return boolean;
+          });
+      });
+  </script>
+}

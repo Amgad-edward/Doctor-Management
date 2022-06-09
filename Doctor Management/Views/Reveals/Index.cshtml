@@ -1,0 +1,183 @@
+﻿@model RevealsSearchView
+@{ 
+    ViewData["Titel"] = "Reevals List";
+}
+
+<h4><u>Reveals List</u></h4>
+<form method="POST" asp-action="Index">
+    <div style="direction:rtl;text-align:right">
+        <div class="card w-75">
+            <div class="card-body">
+                <h5 class="card-title">اظهار حسب</h5>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" id="today" name="N"  type="radio" value="today" />
+                            <label class="form-check-label mr-3" for="today">هذا اليوم</label>
+                        </div>
+                        <div class="form-check">
+                           <div class="row">
+                               <div class="col-md-2">
+                                   <input class="form-check-input" type="radio" name="N" id="exampleRadios1" value="month" checked>
+                                   <label class="form-check-label mr-3" for="exampleRadios1">
+                                       هذا الشهر
+                                   </label>
+                               </div>
+                               <div class="row">
+                                   <div class="col-3 mt-1">
+                                       <div class="form-check">
+                                           <input class="form-check-input" type="radio" name="N" id="rddate" value="Date" />
+                                           <label for="rddate" class="form-check-label mr-3">بتاريخ</label>
+                                       </div>
+                                   </div>
+                                   <div class="col-8">
+                                       <input type="date" name="date" class="form-control" />
+                                   </div>
+                               </div>
+                           </div>
+                        </div>
+                        <div class="form-check mt-3">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <input class="form-check-input" type="radio" name="N" id="rdfrom" value="datefrom">
+                                    <label class="form-check-label mr-3" for="rdfrom">
+                                        من تاريخ :
+                                    </label>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="date" class="form-control" name="from" id="from" />
+                                </div>
+                                <div class="col-md-1"><span>الــى</span></div>
+                                <div class="col-md-3">
+                                    <input type="date" class="form-control" name="to" id="to" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-check mt-3">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <input class="form-check-input" type="radio" name="N" id="rdName" value="Name">
+                                    <label class="form-check-label mr-3" for="rdName">
+                                       الاســـم :
+                                    </label>
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" list="customer" name="Name" id="txtname" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mr-4 mt-3 w-50">بحث</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<datalist id="customer">
+    @foreach (var item in Model.Names)
+    {
+        <option>@item</option>
+    }
+</datalist>
+<div style="direction:rtl;text-align:right">
+    <h4 class="mr-3 mt-2 text-black-50">عدد : @Model.Count</h4>
+</div>
+
+<hr />
+<section style="direction:rtl">
+    <table class="table table-bordered table-hover">
+        <thead class="thead-dark">
+            <tr class="text-center">
+                <th>رقم</th>
+                <th>تــاريخ</th>
+                <th>الاســم</th>
+                <th>نوع الكشف</th>
+                <th>ِAction</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Reveals)
+            {
+            <tr class="text-center">
+                <td>@item.Number</td>
+                <td>@item.DateReservation.ToDate()</td>
+                <td>@item.customer.NameCustomer</td>
+                <td>@item.price.genderprice</td>
+                <td>
+                   @if(item.DateReservation.Date > DateTime.Now.Date || !item.Done)
+                   {
+                       <a title="الغاء الحجز" class="btn btn-outline-light text-danger js" data-id="@item.ID" data-name="@item.customer.NameCustomer" href="javascript:;"><i class="bi bi-trash"></i></a>
+                       <a title="تعديل الحجز" class="btn btn-light text-dark" asp-action="Edit" asp-route-id="@item.ID"><i class="bi bi-pencil-square"></i></a>
+                   }
+                   else
+                   {
+                       <a title="طباعة" class="btn btn-light text-dark" target="_blank" asp-controller="Home" asp-route-id="@item.ID" asp-action="print"><i class="bi bi-printer"></i></a>
+                       if (ViewBag.admin && item.Done)
+                       {
+                           <a title="Edit This Reveals Info" class="btn btn-outline-success" asp-action="EditThis" asp-route-id="@item.ID"><i class="bi bi-pencil-square"></i></a>
+                       }
+                   }
+                </td>
+
+            </tr>
+            }
+        </tbody>
+    </table>
+</section>
+
+
+@section Scripts{ 
+
+
+<script>
+
+    $(document).ready(function () {
+
+        $('.js').on('click', function () {
+
+            let id = $(this).data('id');
+            let Name = $(this).data('name');
+            let row = $(this).parents('tr');
+
+            bootbox.confirm({
+                message: 'هل تريد الغاء حجز ' + Name + ' ??',
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-danger'
+                    },
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-success',
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+
+                        $.ajax({
+                            url: '/Reveals/Delete/' + id,
+                            type: 'GET',
+                            success: function () {
+                                row.fadeOut();
+                                row.remove();
+                            },
+                            error: function (e) {
+                                console.log(e.responseText);
+                            }
+
+                            
+                        });
+                    }
+                }
+
+            });
+
+        });
+
+    });
+
+</script>
+
+}

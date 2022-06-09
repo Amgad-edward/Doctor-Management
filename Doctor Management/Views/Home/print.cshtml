@@ -1,0 +1,98 @@
+﻿
+@model Reveal
+
+@{
+    ViewData["Title"] = "Print - ";
+
+    Owner owner = ViewBag.owner;
+    List<MedicName> medics = ViewBag.medics;
+}
+
+<section>
+
+    <div class="row ml-5">
+        <div class="col-4 text-center">
+            <img src="@(owner.Logo.showimage())" style="width:50px" />
+            <h4>@owner.NameOwner.ConvertName()</h4>
+            <p>@owner.Titel</p>
+            <p>__________________________________________________________________________________________________________________________</p>
+        </div>
+        <div class="col-4 mt-4 text-center">
+            <h5>Name : @Model.customer.NameCustomer</h5>
+            <p class="text-black-50 text-center">@Model.DateReservation.ToDate()</p>
+        </div>
+
+    </div>
+
+    <div class="row ml-5">
+        <h4 class="mt-2"> Medics : </h4>
+        <div class="col-8 m-0">
+            <ul>
+                @foreach (var item in Model.Therapies)
+                {
+                    <li>
+                        <h5>@(medics.Find(x=>x.Id == item.Idmedic).NameMedic)</h5>
+                        <p class="text-black-50">@item.Sub</p>
+                    </li>
+                }
+            </ul>
+
+        </div>
+    </div>
+
+    @if (Model.ItemCheckups.Any())
+    {
+        <hr />
+        <div class="row ml-5">
+            <h4 class="mt-2"> CheckUp : </h4>
+            <div class="col-8 m-0">
+                <ul>
+                    @foreach (var item in Model.ItemCheckups)
+                    {
+                        <li>
+                            <h5>@item.NameCheck</h5>
+                        </li>
+                    }
+                </ul>
+
+            </div>
+        </div>
+        <hr />
+    }
+
+    @if (ViewBag.date != null)
+    {
+         var date =  ((DateTime)ViewBag.date).ToDate();
+        <hr />
+        <div style="direction:rtl;text-align:center">
+            <span><em>الاعـــــادة</em></span>
+            <h6>@date</h6>
+        </div>
+    }
+
+    <div class="row ml-5 justify-content-between">
+        <div class="col-4">
+            <h5>@owner.NameOwner</h5>
+            <p>_________________________________________________________________________________________________________</p>
+
+            <p>Phones: @owner.Phones</p>
+            <p>Address : @owner.Addres</p>
+        </div>
+        <div class="col-4">
+            <h2></h2>
+        </div>
+    </div>
+</section>
+
+
+@section Scripts{ 
+
+    <script>
+
+        $(document).ready(function () {
+            window.print();
+            window.close();
+        });
+    </script>
+
+}

@@ -1,0 +1,87 @@
+﻿@model OwnerView
+
+@{
+    ViewData["Title"] = "Doctor information";
+
+}
+
+
+<div class="row mt-5 ml-1">
+   
+    <div class="col-md-4">
+        <form method="post" asp-action="@(Model.Create ? "Adddoctor":"Edits")" enctype="multipart/form-data">
+            <input asp-for="Id" hidden />
+            <div class="form-group">
+                <label asp-for="NameOwner" class=""></label>
+                <input type="text" asp-for="NameOwner" class="form-control" maxlength="70" />
+                <span asp-validation-for="NameOwner" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Titel" class=""></label>
+                <textarea asp-for="Titel" class="form-control" maxlength="200"></textarea>
+                <span asp-validation-for="Titel" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Addres"></label>
+                <input type="text" asp-for="Addres" class="form-control" maxlength="150" />
+                <span asp-validation-for="Addres" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Phones" class=""></label>
+                <input type="text" asp-for="Phones" class="form-control" maxlength="100" />
+                <span asp-validation-for="Phones" class="text-danger"></span>
+            </div>
+            <div class="custom-file mt-2">
+                <input type="file" class="custom-file-input" asp-for="Logo" accept=".jpg,.png" />
+                <label class="custom-file-label" asp-for="Logo"></label>
+                <span asp-validation-for="Logo" class="text-danger text-right"></span>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">
+                <i class="bi bi-box-arrow-down"></i>
+                Save
+            </button>
+        </form>
+    </div>
+    <div class="col-md-2">
+            <img class="img-thumbnail" alt="Logo" style="width:100px" src="@Model.Logo.showimage()" />
+        </div>
+  
+        <div class="col-md-5">
+            <form method="POST" asp-action="Upload" asp-controller="backups" enctype="multipart/form-data">
+                <h4>استرجاع ملف البيانات</h4>
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" name="Filesql" required accept=".sql" />
+                    <label id="lbl" class="custom-file-label">Select File Data Backup</label>
+                </div>
+                <button type="submit" class="btn btn-primary w-50 mt-3">Attach</button>
+            </form>
+        </div>
+   
+</div>
+
+
+@section Scripts{ 
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+
+        $(document).ready(function () {
+            $('#Logo').on('change', function () {
+                let nameFile = $(this).val().split('\\').pop();
+                $(this).siblings('Label').text(nameFile);
+
+                let Imageselect = $('img');
+                let logo = window.URL.createObjectURL(this.files[0]);
+                Imageselect.attr('src', logo);
+
+            });
+
+            $('#Filesql').on('change', function () {
+                $('#lbl').text(this.files[0].name);
+            });
+        });
+
+    </script>
+
+
+}

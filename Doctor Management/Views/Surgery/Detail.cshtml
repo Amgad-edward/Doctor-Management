@@ -1,0 +1,66 @@
+﻿@model SurgeryView
+
+@{ 
+    ViewData["Title"] = "Surgery";
+
+}
+
+<div class="card">
+    <div class="card-header">
+        @Model.CustomerName
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">@Model.NameSurgery</h5>
+        <p class="card-text">@Model.DateTime.ToDate()</p>
+        <a href="javascript:;" data-done="@Model.Done" data-id="@Model.Id" class="btn @(Model.Done?"btn-success":"btn-primary")">
+            @if (Model.Done)
+            {
+                <span>Is Done Surgery</span>
+            }
+            else
+            {
+                <span>Done Surgery</span>
+            }
+
+        </a>
+    </div>
+</div>
+
+
+@section Scripts{ 
+
+  <script>
+
+      $(document).ready(function () {
+          $('a').click(function () {
+              let id = $(this).data('id');
+              let done = $(this).data('done');
+              let btu = $(this);
+              let check = done == true ? false : true;
+              $.ajax({
+                  url: '/Surgery/ChangeDone',
+                  type: 'POST',
+                  data: { ID: id, isDone: check },
+                  success: function () {
+                      if (check) {
+                          btu.removeClass('btn-primary');
+                          btu.addClass('btn-success');
+                          btu.text('Is Done Surgery');
+                          toastr.success('Done change');
+                      }
+                      else {
+                          btu.removeClass('btn-success');
+                          btu.addClass('btn-primary');
+                          btu.text('Done Surgery');
+                      }
+                  },
+                  error: function (e) {
+                      console.log(e.responseText);
+                  }
+              });
+          });
+      });
+
+  </script>
+
+}

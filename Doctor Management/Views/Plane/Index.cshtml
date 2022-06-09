@@ -1,0 +1,188 @@
+﻿@model IEnumerable<PlaneReveals>
+@{ 
+    ViewData["Title"] = "Plane Reveals";
+}
+
+
+<h3>Plane Reveals (خطط الكشف)</h3>
+<a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> Add Plane Of Time Span</a>
+<a class="btn btn-outline-warning ml-2" href="javascript:;" id="btudelold">Clean Old Data</a>
+<a class="btn btn-outline-danger ml-2" href="javascript:;" id="btudelall">Clean All Data</a>
+<hr />
+
+<div class="card">
+    <div class="card-header">
+        Plane Of Reveals
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Show Plane of</h5>
+        <form method="POST" asp-action="Index">
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="form-check">
+                        <input type="radio" name="N" value="week" id="r1" class="form-check-input" />
+                        <label for="r1" class="form-check-label">This Week</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input type="radio" name="N" value="month" id="r2" class="form-check-input" />
+                        <label for="r2" class="form-check-label">This Month</label>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="form-check mt-2">
+                                    <input type="radio" name="N" value="date" id="r3" class="form-check-input" />
+                                    <label for="r3" class="form-check-label">By Date From : </label>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <input name="datefrom" type="date" class="form-control" />
+                            </div>
+                            <span class="mt-2">To</span>
+                            <div class="col-4">
+                                <input name="dateto" type="date" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-25">Show</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<hr />
+
+<section>
+    <div class="col-7">
+        <input type="search" id="txt" placeholder="Search" class="form-control" />
+    </div>
+    <table class="table table-bordered table-hover mt-3">
+        <thead class="thead-dark sticky-top">
+            <tr class="text-center">
+                <th>Day Date</th>
+                <th>Count Reveals</th>
+                <th>All Reveals</th>
+                <th>Is Leave</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+            <tr class="text-center">
+                <td>@item.DateDay.ToDate()</td>
+                <td>@item.Count</td>
+                <td>
+                    @if (item.All)
+                    {
+                        <i class="bi bi-check2 text-success"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-x-lg text-secondary"></i>
+                    }
+                </td>
+                <td>
+                    @if (item.Leave)
+                    {
+                        <i class="bi bi-check2 text-success"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-x-lg text-secondary"></i>
+                    }
+                </td>
+                <td>
+                    <a class="btn btn-outline-light text-dark" asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil-square"></i></a>
+                </td>
+
+            </tr>
+            }
+        </tbody>
+    </table>
+
+</section>
+
+@section Scripts{ 
+
+<script>
+
+
+
+    $(document).ready(function () {
+        $('#btudelold').click(function () {
+            bootbox.confirm({
+                message: 'ستيم حذف خطط للتواريخ السابقة التى مضت هل تريد الحذف؟',
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-danger'
+                    },
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-success',
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: '/Plane/DelOld',
+                            type: 'GET',
+                            success: function () {
+                                toastr.success("تم الحذف بنجاح");
+                                window.location.reload(true);
+                            },
+                            error: function (e) {
+                                console.log(e)
+                            }
+                        });
+                    }
+                }
+            });
+
+        });
+
+        $('#btudelall').click(function () {
+            bootbox.confirm({
+                message: 'احذر سيتم حذف كل البيانات وكل الخطط هل تريد الحذف؟؟',
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-danger'
+                    },
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-success',
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: '/Plane/DelAll',
+                            type: 'GET',
+                            success: function () {
+                                toastr.success("تم الحذف بنجاح");
+                                window.location.reload(true);
+                            },
+                            error: function (e) {
+                                console.log(e)
+                            }
+                        });
+                    }
+                }
+            });
+        });
+
+        $('#txt').on('keyup', function () {
+            let value = $(this).val();
+            $('table tbody tr').filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+    });
+
+
+</script>
+
+}

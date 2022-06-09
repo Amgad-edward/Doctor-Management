@@ -1,0 +1,140 @@
+﻿@model List<Account_Pay>
+@{ 
+    ViewData["Title"] = "Account Pays";
+}
+
+<h3>Account Pays (مصروفات)</h3>
+<div class="mb-3">
+    <a class="btn btn-primary" asp-action="AddingPay">Add Pays</a>
+    <a class="btn btn-outline-info" asp-action="Fixed">Add Item Pays</a>
+</div>
+<div >
+    <div class="card">
+        <div class="card-header">
+            Show Account
+        </div>
+        <div class="card-body">
+            <blockquote class="blockquote mb-0">
+                <form method="POST" asp-action="Index">
+                    <div class="row">
+                        <div class="col-md-7">
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" id="rmonth" name="N" value="month" />
+                                <label class="form-check-label mr-3" for="rmonth">This Month</label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input type="radio" class="form-check-input" id="rdate" name="N" value="date" />
+                                <label class="form-check-label mr-3" for="rdate">By Date : </label>
+                                <input type="date" name="date" class="form-control col-5" />
+                            </div>
+                            <div class="form-check mt-2">
+                                <input type="radio" class="form-check-input" id="rform" name="N" value="ft" />
+                                <label class="form-check-label mr-3" for="rform">By Date Span : </label>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <input type="date" name="from" class="form-control" />
+                                    </div>
+                                    To
+                                    <div class="col-4">
+                                        <input type="date" name="to" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input type="radio" class="form-check-input" id="rName" name="N" value="name" />
+                                <label class="form-check-label mr-3" for="rName">By Name : </label>
+                                <input type="text" name="Name" class="form-control col-7" placeholder="Name" />
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-2 ml-5 w-25">Show</button>
+                        </div>
+                       
+                    </div>
+                </form>
+            </blockquote>
+        </div>
+    </div>
+</div>
+<div class="mt-2">
+    <h5 class="text-black-50"><em>Total : @Model.Sum(x => x.Amount) - Eg</em></h5>
+</div>
+<hr />
+
+<div class="mt-2">
+    <table class="table table-bordered table-hover">
+        <thead class="thead-dark ">
+            <tr class="text-center">
+                <th>To Account</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr class="text-center">
+                    <td>
+                        @item.ToPay
+                    </td>
+                    <td>@item.Amount</td>
+                    <td>@item.Date.ToDate()</td>
+                    <td>
+                        <a class="btn btn-outline-light text-dark" asp-action="Edits" asp-route-id="@item.Id"><i class="bi bi-pencil-square"></i></a>
+                        <a class="btn btn-outline-light text-danger jsd" data-id="@item.Id" data-name="@item.ToPay"><i class="bi bi-trash"></i></a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts{ 
+
+
+ <script>
+
+     $(document).ready(function () {
+
+         $('.jsd').click(function () {
+             let id = $(this).data('id');
+             let row = $(this).parents('tr');
+             let Name = $(this).data('name');
+             bootbox.confirm({
+                 message: 'Do you Delete ' + Name,
+                 buttons: {
+                     confirm: {
+                         label: 'Yes',
+                         className: 'btn-danger'
+                     },
+                     cancel: {
+                         label: 'No',
+                         className: 'btn-success',
+                     }
+                 },
+                 callback: function (result) {
+                     if (result) {
+                         $.ajax({
+
+                             url: '/Pays/Delete/' + id,
+                             type: 'GET',
+                             success: function () {
+                                 toastr.success('Done Delete ' + Name);
+                                 row.addClass('animate__animated animate__rollOut');
+                                 setTimeout(function () {
+                                     row.remove();
+                                 }, 1000);
+                             },
+                             error: function (e) {
+                                 console.log(e);
+                             }
+                         });
+                     }
+                 }
+             });
+         });
+
+     });
+
+ </script>
+
+}

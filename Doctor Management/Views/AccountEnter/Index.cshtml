@@ -1,0 +1,104 @@
+﻿@model List<Account_Enter>
+@{ 
+    ViewData["Title"] = "Account Enter Amount";
+}
+
+<h2>Account Enter (مدخلات)</h2>
+<a class="btn btn-primary w-25 mt-3" asp-action="Adding">Add</a>
+<hr />
+<div style="direction:rtl;text-align:right">
+    <h4><u>اجمالى الحساب المدخل  : @Model.Sum(x=>x.Amount) - Eg</u></h4>
+    <input type="text" placeholder="بحث" id="txtsearch"  class="form-control w-50 mb-3 mt-2"/>
+</div>
+<section style="direction:rtl">
+    <table id="tbl" class="table table-bordered table-hover">
+        <thead class="thead-dark">
+            <tr class="text-center">
+                <th>من حساب</th>
+                <th>المبــلغ</th>
+                <th>تـــاريخ</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+            <tr class="text-center">
+                <td class="">@item.From</td>
+                <td class="">@item.Amount - Eg</td>
+                <td class="">@item.Date.ToDate()</td>
+                <td>
+                    <a class="btn btn-outline-light text-dark" asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil-square"></i></a>
+                    <a class="btn btn-outline-light text-danger js" href="javascript:;" data-id="@item.Id" data-name="@item.From" ><i class="bi bi-trash"></i></a>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</section>
+
+
+@section Scripts{ 
+
+ <script>
+
+     $(document).ready(function () {
+
+         $('#txtsearch').on('keyup', function () {
+             let value = $(this).val();
+             $('#tbl tbody tr').filter(function () {
+                 $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+             });
+         });
+
+         $('.js').on('click', function () {
+             let id = $(this).data('id');
+             let Name = $(this).data('name');
+             let row = $(this).parents('tr');
+             bootbox.confirm({
+                 message: 'Do you Delete Account ' + Name + ' ??',
+                 buttons: {
+                     confirm: {
+                         label: 'Yes',
+                         className: 'btn-danger'
+                     },
+                     cancel: {
+                         label: 'No',
+                         className: 'btn-success',
+                     }
+                 },
+                 callback: function (result) {
+                     if (result) {
+                         $.ajax({
+                             url: '/AccountEnter/Delete/' + id,
+                             type: 'GET',
+                             success: function () {
+                                 toastr.success('Done Remove Account ' + Name);
+                                 row.addClass('animate__animated animate__fadeOut');
+                                 setTimeout(function () {
+                                     row.remove();
+                                 },1000);
+                             },
+                             error: function (e) {
+                                 console.log(e);
+                             }
+
+                         });
+
+
+
+                     }
+                 }
+
+             });
+
+         });
+
+
+
+     });
+
+
+ </script>
+
+}

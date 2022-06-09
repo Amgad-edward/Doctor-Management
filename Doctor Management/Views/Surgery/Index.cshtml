@@ -1,0 +1,178 @@
+﻿@model IEnumerable<Surgery>
+@{ 
+    ViewData["Title"] = "Surgery";
+}
+
+
+<h3>Surgery</h3>
+<a class="btn btn-primary mt-1" asp-action="Create">Add Surgery</a>
+<hr />
+<div class="card">
+    <div class="card-header">
+        Show
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Search</h5>
+        <form method="POST" asp-action="Index">
+            <div class="row">
+                <div class="col-md-11">
+                    <div class="row">
+                        <div class="col-3">
+                            <div class="form-check">
+                                <input type="radio" name="N" id="r1" value="date" class="form-check-input" />
+                                <label for="r1" class="form-check-label">By Date</label>
+                            </div>
+                        </div>
+                        <div class="col-8">
+                            <div class="form-group">
+                                <input type="date" name="date" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">
+                            <div class="form-check">
+                                <input type="radio" name="N" id="r2" value="fromdate" class="form-check-input" />
+                                <label for="r2" class="form-check-label">By Date From</label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <input type="date" name="from" class="form-control" />
+                            </div>
+                        </div>
+                        <span class="mt-1">To</span>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <input type="date" name="to" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label>Total Count : @Model.ToList().Count</label><br />
+                        <label>Total Price : @Model.ToList().Sum(x=>x.Price) EG</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Show</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<hr />
+<div class="col-7">
+    <input id="txt" type="text" class="form-control" placeholder="Search" />
+</div>
+<section class="mt-2">
+    <table class="table table-bordered table-hover">
+        <thead class="thead-dark sticky-top">
+            <tr class="text-center">
+                <th>Name Customer</th>
+                <th>Name Surgery</th>
+                <th>Date</th>
+                <th>Price</th>
+                <th>Is Done</th>
+                <th>Action</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+            <tr class="text-center">
+                <td>@item.customer.NameCustomer</td>
+                <td>@item.NameSurgery</td>
+                <td>@item.DateTime.ToDate()</td>
+                <td>@item.Price EG</td>
+                <td>
+                    <input type="checkbox" class="form-check-input js" data-id="@item.Id" asp-for="@item.Done" />
+                </td>
+                <td>
+                    <a class="btn btn-outline-light text-dark" asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil-square"></i></a>
+                    <a class="btn btn-outline-light text-danger del" data-id="@item.Id" data-name="@($"{item.NameSurgery} {item.customer.NameCustomer}")" href="javascript:;" ><i class="bi bi-trash"></i></a>
+                </td>
+
+            </tr>
+            }
+        </tbody>
+    </table>
+</section>
+
+
+@section Scripts{ 
+
+
+ <script>
+
+     $(document).ready(function () {
+
+         $('.js').change(function () {
+
+             let id = $(this).data('id');
+             let check = $(this).prop('checked');
+             $.ajax({
+                 url: '/Surgery/ChangeDone',
+                 type: 'POST',
+                 data: { ID: id, isDone: check },
+                 success: function () {
+                     toastr.success('تم تغير حالة');
+                 },
+                 error: function (e) {
+                     console.log(e.responseText);
+                 }
+             });
+
+         });
+
+         $('.del').click(function () {
+             let id = $(this).data('id');
+             let row = $(this).parents('tr');
+             let name = $(this).data('name');
+             bootbox.confirm({
+                 message: 'Do you Delete Surgery ' + name,
+                 buttons: {
+                     confirm: {
+                         label: 'Yes',
+                         className: 'btn-danger'
+                     },
+                     cancel: {
+                         label: 'No',
+                         className: 'btn-success',
+                     }
+                 },
+                 callback: function (result) {
+                     if (result) {
+
+                         $.ajax({
+                             url: '/Surgery/Delete/' + id,
+                             type: 'GET',
+                             success: function () {
+                                 toastr.success('Done Delete ' + name);
+                                 row.fadeOut(1000).delay(1000);
+                                 row.remove();
+                             },
+                             error: function (e) {
+                                 console.log(e.responseText);
+                             }
+                         });
+                         
+                     }
+                 }
+                 
+             });
+         });
+
+         $('#txt').keyup(function () {
+
+             let value = $(this).val();
+             $('table tbody tr').filter(function () {
+                 $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+             });
+
+         });
+
+     });
+
+ </script>
+
+}

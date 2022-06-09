@@ -1,0 +1,137 @@
+﻿
+@model IEnumerable<Customer>
+
+@{ 
+    ViewData["Title"] = "Customers";
+}
+
+<h2>Customer</h2>
+<a class="btn btn-primary" asp-action="Create">
+    Add Customer
+    <i class="bi bi-person-plus"></i>
+</a>
+<a class="btn btn-outline-primary" asp-action="addfile">
+    Add File
+    <i class="bi bi-card-checklist"></i>
+</a>
+<hr />
+<section class="">
+    <h6>Count : @Model.ToList().Count</h6>
+    <div class="row">
+        <div class="col-md-7">
+            <input type="text" id="txt" class="form-control" placeholder="Search" />
+        </div>
+    </div>
+    <hr />
+    <div style="direction:rtl" class="">
+        <table class="table table-bordered table-hover table-responsive-sm table-responsive-md">
+            <thead class="thead-dark text-center sticky-top">
+                <tr>
+                    <th>الرقم</th>
+                    <th>الاســـم</th>
+                    <th>العمــر</th>
+                    <th>فصيلة الدم</th>
+                    <th>الهاتــف</th>
+                    <th>ملف العميل</th>
+                </tr>
+            </thead>
+            <tbody class="text-center">
+                @foreach (var C in Model)
+                {
+                    <tr class="animate__animated animate__fadeIn">
+                        <td>@C.ID</td>
+                        <td>@C.NameCustomer</td>
+                        <td>@C.dateBirth.GetAge()</td>
+                        <td>@C.Blood</td>
+                        <td>@C.Phones</td>
+                        <td>
+                            <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@C.ID">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <a class="btn btn-outline-danger jsDel" href="javascript:;" data-id="@C.ID" data-name="@C.NameCustomer">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                            <a class="btn btn-outline-primary" href="/Home/ShowProfile/@C.ID">
+                                <i class="bi bi-person-lines-fill"></i>
+                            </a>
+                        </td>
+
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+
+
+
+
+
+@section Scripts{ 
+
+<script>
+
+    $(document).ready(function () {
+
+        $('.jsDel').click(function () {
+
+            var btu = $(this);
+            var Name = btu.data('name');
+            var id = btu.data('id');
+            bootbox.confirm({
+                message: "هل تريد حذف العميل " + Name,
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-danger'
+                    },
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-success',
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: '/Customer/Delete/' + id,
+                            type: 'GET',
+                            success: function () {
+                                let Tr = btu.parents('tr');
+                                Tr.removeClass('animate__fadeIn');
+                                Tr.addClass('animate__fadeOutDown');
+                                setTimeout(function () {
+                                    Tr.remove();
+                                }, 1000);
+                                toastr.success('Delete Done' + Name);
+                            },
+                            error: function (e) {
+                                console.log(e.responseText);
+                                toastr.error('Not delete');
+                            }
+                        });
+                    }
+                }
+
+
+            });
+            
+
+        });
+
+        $('#txt').on('keyup', function () {
+            let value = $(this).val();
+            $('table tbody tr').filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+
+
+
+
+    });
+
+
+</script>
+
+}

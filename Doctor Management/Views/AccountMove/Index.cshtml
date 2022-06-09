@@ -1,0 +1,202 @@
+﻿@model AccountMoveView
+@{ 
+    ViewData["Title"] = "Account Move";
+}
+
+<h3>Account Move</h3>
+<hr />
+<div class="card">
+    <h5 class="card-header">Show Account</h5>
+    <form method="POST" asp-action="Index">
+        <div class="row">
+            <div class="col-md-7">
+                <div class="form-check ml-5 mt-3">
+                    <input type="radio" name="N" value="All" class="form-check-input" id="r1" />
+                    <label for="r1" class="form-check-label">All Account</label>
+                </div>
+                <div class="form-check ml-5 mt-3">
+                    <input type="radio" name="N" value="month" class="form-check-input" id="r5" />
+                    <label for="r5" class="form-check-label">This Month</label>
+                </div>
+                <div class="form-check ml-5 mt-3">
+                    <div class="row">
+                        <div class="col-md-2 mt-1">
+                            <input type="radio" name="N" value="date" class="form-check-input" id="r2" />
+                            <label for="r2" class="form-check-label">By Date :</label>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="date" class="form-control" value="2021-12-25"  name="date" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-check ml-5 mt-3">
+                    <div class="row">
+                        <div class="col-md-3 mt-1">
+                            <input type="radio" name="N" value="fr" class="form-check-input" id="r3" />
+                            <label for="r3" class="form-check-label">By Date From :</label>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="date" class="form-control" name="from" />
+                        </div>
+                        <span class="mt-1">To</span>
+                        <div class="col-md-4">
+                            <input type="date" class="form-control" name="to" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-check ml-5 mt-3 mb-3">
+                    <div class="row">
+                        <div class="col-md-3 mt-1">
+                            <input type="radio" name="N" value="select" class="form-check-input" id="r4" />
+                            <label for="r4" class="form-check-label">By Gender :</label>
+                        </div>
+                        <div class="col-md-7">
+                            <select class="form-control" name="Name">
+                                <option selected></option>
+                                @foreach (var item in Model.listNames)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-1 ml-5 mb-3 w-25">Show</button>
+                <button type="submit" id="btuprint" class="btn btn-outline-dark mb-2 ml-2" formtarget="_blank" asp-action="Print">Print</button>
+            </div>
+        </div>
+    </form>
+</div>
+<hr />
+<div class="card">
+    <div class="card-body">
+      <div class="row">
+          <div class="col-md-2">
+             <h3 class="text-black-50"><u>Net Profit : </u></h3>
+          </div>
+          <div class="col-md-4">
+              @{
+                  var Enter = Model.Enter.Sum(x => x.Amount) + Model.Reveals.Sum(x => x.Price) + Model.Surgeries.Sum(x => x.Price);
+                  var Pays = Model.Pays.Sum(x => x.Amount);
+                  var Profit = Enter - Pays;
+                  if (Profit > 0)
+                  {
+                      <h3 class="text-success"><em>ربــح :  @string.Format("{0:c}", Profit)</em></h3>
+
+                  }
+                  else if (Profit == 0)
+                  {
+                      <h3 class="text-info"><em>لا يوجد ربح</em></h3>
+                  }
+                  else
+                  {
+                      <h3 class="text-danger"><em>خسارة  :  @string.Format("{0:c}", Profit) </em></h3>
+                  }
+              }
+          </div>
+      </div>
+    </div>
+</div>
+<section class="mt-2">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card w-100">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Total Enter : @(string.Format("{0:c}", Model.Enter.Sum(x => x.Amount) + Model.Reveals.Sum(x => x.Price) + Model.Surgeries.Sum(x=>x.Price)))</h5>
+                  <p>Table Enter Amount(الدخل)</p>
+                </div>
+            </div>
+            <table class="table table-bordered table-hover mt-1">
+                <thead class="thead-dark sticky-top">
+                    <tr class="text-center">
+                        <th>From</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Reveals)
+                    {
+                        <tr class="text-center">
+                            <td>@item.reveal.customer.NameCustomer</td>
+                            <td class="text-info">@item.Price</td>
+                            <td>@item.Date.ToDate()</td>
+                        </tr>
+                    }
+                    @foreach (var item in Model.Enter)
+                    {
+                        <tr class="text-center">
+                            <td>@item.From</td>
+                            <td class="text-info">@item.Amount</td>
+                            <td>@item.Date.ToDate()</td>
+                        </tr>
+                    }
+                    @foreach (var item in Model.Surgeries)
+                    {
+                        <tr class="text-center">
+                            <td>@item.NameSurgery</td>
+                            <td class="text-info">@item.Price</td>
+                            <td>@item.DateTime.ToDate()</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card w-100">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Total Pays : @(string.Format("{0:c}", Model.Pays.Sum(x => x.Amount)))</h5>
+                   <p>Table Pays (مصروفات)</p>
+                </div>
+            </div>
+            <table class="table table-bordered table-hover mt-1 sticky-top">
+                <thead class="thead-dark">
+                    <tr class="text-center">
+                        <th>From</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Pays)
+                    {
+                        <tr class="text-center">
+                            <td>@item.ToPay</td>
+                            <td class="text-info">@item.Amount</td>
+                            <td>@item.Date.ToDate()</td>
+                        </tr>
+                    }
+           
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+
+
+
+@section Scripts{ 
+
+
+  <script>
+
+      $(document).ready(function () {
+          var btu = $('#btuprint');
+          btu.hide();
+          $('input[type=radio]').change(function () {
+
+              if (this.checked) {
+                  btu.show();
+              }
+              else {
+                  btu.hide();
+              }
+          });
+        
+      });
+
+  </script>
+
+} 

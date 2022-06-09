@@ -1,0 +1,164 @@
+﻿
+@model LogingView
+@{ 
+    ViewData["Title"] = "Add new User";
+}
+
+
+<h3>Add New User</h3>
+<hr />
+
+<form method="POST" asp-action="Create" >
+    <section class="row m-5">
+        <div class="col-md-6">
+            <div class="form-group username">
+                <label asp-for="UserName" class=""></label>
+                <input type="text" asp-for="UserName" class="form-control" placeholder="Enter User Name" maxlength="10" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+               <div class="row">
+                   <div class="col-8">
+                       <div class="form-group">
+                           <label asp-for="Password"></label>
+                           <input type="password" asp-for="Password" class="form-control" placeholder="Enter Password" maxlength="8" />
+                           <span id="lblerror" asp-validation-for="Password" class="text-danger"></span>
+                       </div>
+                       <div class="form-group">
+                           <label asp-for="Re_Password"></label>
+                           <input type="password" asp-for="Re_Password" class="form-control mt-3" placeholder="Re-Enter Password" maxlength="8" />
+                           <span id="lblre" asp-validation-for="Re_Password" class="text-danger"></span>
+                       </div>
+                   </div>
+                   <div class="col-4 mt-5">
+                       <button type="button" id="btusee" class="btn btn-light mt-2">
+                           <i class="bi bi-eye-slash"></i>
+                       </button>
+                   </div>
+               </div>
+            </div>
+            <div class="form-check w-50">
+                <input class="form-check-input" asp-for="Admin" /> 
+                <label asp-for="Admin" class="form-check-label text-primary"></label>
+            </div>
+            <button type="submit" class="btn btn-primary mt-4">
+                Add
+                <i class="bi bi-plus-circle"></i>
+            </button>
+            <a class="btn btn-outline-secondary mt-4" asp-action="Index">Cancel</a>
+            
+        </div>
+    </section>
+</form>
+
+@section Scripts{ 
+
+@{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+<script>
+
+
+    $(document).ready(function () {
+
+        $('#btusee').click(function () {
+
+            let pass1 = $('#Password');
+            let pass2 = $('#Re_Password');
+            if (pass1.attr('type') === 'password') {
+                pass1.attr('type', 'text');
+                pass2.attr('type', 'text');
+                $('#btusee i').removeClass('bi bi-eye-slash');
+                $('#btusee i').addClass('bi bi-eye');
+            
+            }
+            else {
+                pass1.attr('type', 'password');
+                pass2.attr('type', 'password');
+                $('#btusee i').removeClass('bi bi-eye');
+                $('#btusee i').addClass('bi bi-eye-slash');
+            }
+
+        });
+        
+        $('.username input').on('change', function () {
+
+            let user = $(this).val();
+            let lbl = $('.username span');
+            $.ajax({
+                url: '/login/ExsistsName',
+                type: 'POST',
+                data: { Name: user },
+                success: function (data) {
+                    if (data) {
+                        lbl.removeClass('text-info');
+                        lbl.addClass('text-danger');
+                        lbl.text('هذا المستحدم مضاف مسبقا');
+                    }
+                    else {
+                        lbl.removeClass('text-danger');
+                        lbl.addClass('text-info');
+                        lbl.text('الاسم مسموح');
+                    }
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+                
+            });
+           
+
+
+        });
+
+        $('#Password').keyup(function () {
+            let lbl = $('#lblerror');
+            let pass = $(this).val().length;
+            if (pass > 0 && pass < 4) {
+                lbl.removeClass();
+                lbl.addClass('text-info');
+                lbl.text('كلمة سر ضعيفة');
+            }
+            else if (pass >= 4 && pass < 6) {
+                lbl.removeClass();
+                lbl.addClass('text-info');
+                lbl.text('كلمة سر متوسطة');
+            }
+            else if (pass == 8) {
+                lbl.removeClass();
+                lbl.addClass('text-success');
+                lbl.text('كلمة سر قوية');
+            }
+            else {
+                lbl.removeClass();
+                lbl.addClass('text-danger');
+                lbl.text('');
+            }
+            
+        });
+
+        $('#Re_Password').keyup(function () {
+
+            let lbl = $('#lblre');
+            let passfirst = $('#Password').val();
+            let Pass = $(this).val();
+            if (Pass === passfirst) {
+                lbl.removeClass();
+                lbl.addClass('text-success');
+                lbl.text('كلمة السر متطابقة');
+            }
+            else {
+                lbl.removeClass();
+                lbl.addClass('text-danger');
+                lbl.text('كلمة السر غير متطابقة');
+            }
+
+        });
+
+    });
+
+
+    
+
+</script>
+
+}

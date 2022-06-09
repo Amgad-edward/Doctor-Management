@@ -1,0 +1,93 @@
+﻿@model List<ItemCheckup>
+@{
+    ViewData["Title"] = $"Customer {(Model.Count > 0 ? Model[0].customer.NameCustomer : "")}";
+    List<ResultNormal> lis = ViewBag.normal;
+}
+
+@if (Model.Count > 0)
+{
+    <h3>All Check of @Model[0].customer.NameCustomer</h3>
+    <section>
+        @foreach (var id in ViewBag.ids)
+        {
+            var check = Model.Where(x => x.Idreveal == id).ToList();
+            if (check.Count > 0)
+            {
+                <div class="mt-4">
+                    <p>
+                        <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample@(id)" role="button" aria-expanded="false" aria-controls="collapseExample@(id)">
+                            @check[0].reveal.DateReservation.ToDate()
+                        </a>
+                    </p>
+                    <div class="collapse" id="collapseExample@(id)">
+                        <div class="card card-body">
+                            @foreach (var item in check)
+                            {
+                                double? normal = lis.Where(x => x.Name == item.NameCheck && (x.Gender == item.customer.Gender || x.Gender.Contains(item.customer.Gender))).FirstOrDefault().Normal;
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <h5>@item.NameCheck : </h5>
+                                </div>
+                                @if (normal.HasValue)
+                                {
+                                    if (item.Resulte == normal.Value)
+                                    {
+                                        <div class="col-md-2">
+                                            <h5 class="text-success">@item.Resulte</h5>
+                                        </div>
+                                        <div class="col-md-1 text-success">
+                                            <i class="bi bi-check-all"></i>
+                                        </div>
+                                    }
+                                    else if (item.Resulte < normal.Value)
+                                    {
+                                        <div class="col-md-2">
+                                            <h5 class="text-info">@item.Resulte</h5>
+                                        </div>
+                                        <div class="col-md-1 text-info">
+                                            <i class="bi bi-arrow-down"></i>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-md-2">
+                                            <h5 class="text-danger">@item.Resulte</h5>
+                                        </div>
+                                        <div class="col-md-1 text-danger">
+                                            <i class="bi bi-arrow-up"></i>
+                                        </div>
+                                    }
+                                    <div class="col-md-2 text-black-50">
+                                        <span>Normal : @normal</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-md-2">
+                                        <h5 class="text-black-50">@item.Resulte</h5>
+                                    </div>
+                                }
+                                @if (item.ImageReport != null)
+                                {
+                                    <div class="col-md-4">
+                                        <a href="@item.ImageReport.showimage("jpg")" target="_blank"><img src="@item.ImageReport.showimage()" class="img-thumbnail" alt="Image" /></a>
+                                    </div>
+                                }
+                                <div class="col-md-1">
+                                    <a class="btn btn-outline-light text-dark" title="Edit" target="_blank" asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil-square"></i></a>
+                                </div>
+                            </div>
+                            }
+                            <hr />
+                        </div>
+                    </div>
+                </div>
+
+            }
+        }
+    </section>
+}
+else
+{
+    <h1>noo</h1>
+}

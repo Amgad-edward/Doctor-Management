@@ -1,0 +1,69 @@
+﻿@model Medicview
+@{ 
+    ViewData["Title"] = (Model.IsCreate ? "Add Medic Name" : $"Edit Medic Name {Model.NameMedic}");
+}
+
+<h3>@(Model.IsCreate ? "Add New Medic Name" : $"Edit Medic Name ({Model.NameMedic})")</h3>
+
+<form method="POST" asp-action="@(Model.IsCreate ? "Create":"Edit")">
+    <div class="row">
+        <div class="col-md-4">
+            <input asp-for="Id" hidden />
+            <div class="form-group">
+                <label asp-for="NameMedic"></label>
+                <input type="text" class="form-control" asp-for="NameMedic" maxlength="50" placeholder="Name"  />
+                <span asp-validation-for="NameMedic" class=""></span>
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a class="btn btn-outline-secondary mt-2" asp-action="Index">Cancel</a>
+        </div>
+    </div>
+</form>
+
+
+@section Scripts{ 
+
+@{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+ <script>
+
+     $(document).ready(function () {
+         var create = @(Model.IsCreate ?"true" : "false");
+
+         if (create) {
+
+             $('input').keyup(function () {
+                 let value = $(this).val();
+                 let lbl = $('span');
+                 $.ajax({
+
+                     url: '/Medic/NameExists',
+                     type: 'POST',
+                     data: { Name: value },
+                     success: function (data) {
+                         if (data) {
+                             lbl.removeClass('text-success')
+                             lbl.addClass('text-danger');
+                             lbl.text('الاسم مسجل');
+                         }
+                         else {
+                             lbl.removeClass('text-danger');
+                             lbl.addClass('text-success');
+                             lbl.text('الاسم متاح');s
+                         }
+                     },
+                     error: function (e) {
+                         console.log(e.responseText);
+                     }
+                 })
+
+             });
+         }
+         
+         
+     });
+
+ </script>
+    
+
+}

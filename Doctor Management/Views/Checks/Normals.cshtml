@@ -1,0 +1,202 @@
+﻿
+@model NormalsView
+@{
+    ViewData["Title"] = "Normale Resulr";
+}
+
+
+<h3 class="mt-4">Normals Result</h3>
+
+<form method="POST" asp-action="Normals">
+   <div class="row">
+
+       <div class="col-md-4">
+           <div class="form-group">
+               <label>Name List</label>
+               <select asp-for="ID" asp-items="Model.ListNames" class="form-control"></select>
+           </div>
+       </div>
+       <div class="col-md-2">
+           <button class="btn btn-outline-primary mt-4">Get</button>
+       </div>
+   </div>
+</form>
+<hr />
+<form method="POST" asp-action="AddOne">
+    <div class="row" id="dvr">
+        <div class="col-4">
+            <input asp-for="IdNor" hidden />
+            <div class="form-group">
+                <label asp-for="Resul.Name"></label>
+                <input type="text" asp-for="Resul.Name" class="form-control" />
+                <span asp-validation-for="Resul.Name"></span>
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="form-group">
+                <label asp-for="Resul.Normal"></label>
+                <input type="number" asp-for="Resul.Normal" class="form-control" />
+                <span asp-validation-for="Resul.Normal"></span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label asp-for="Resul.Gender"></label>
+                <select class="form-control" asp-for="Resul.Gender">
+                    <option>M&F</option>
+                    <option>M</option>
+                    <option>F</option>
+                </select>
+                <span asp-validation-for="Resul.Gender"></span>
+            </div>
+        </div>
+        <div class="col-md-2 mt-4">
+            <button type="submit" class="btn btn-primary">Add/Edit This</button>
+        </div>
+    </div>
+</form>
+
+<hr />
+@if (Model.Results.Count > 0)
+{
+    <div>
+        <form method="POST" asp-action="AddListNormal">
+            <button type="submit" class="btn btn-primary mt-3 mb-2 w-25">Add</button>
+            <table class="table table-bordered table-hover">
+                <thead class="sticky-top thead-light">
+                    <tr>
+                        <th>@Html.DisplayNameFor(x => x.Resul.Name)</th>
+                        <th>@Html.DisplayNameFor(x => x.Resul.Gender)</th>
+                        <th>@Html.DisplayNameFor(x => x.Resul.Normal)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Results.Count; i++)
+                    {
+                        <tr class="text-center">
+                            <td>
+                                <label>@Model.Results[i].Name</label>
+                                <input asp-for="@Model.Results[i].Name" hidden />
+                            </td>
+                            <td>
+                                <select class="form-control" asp-for="@Model.Results[i].Gender">
+                                    <option>M&F</option>
+                                    <option>M</option>
+                                    <option>F</option>
+                                </select>
+
+                            </td>
+                            <td>
+                                <input asp-for="@Model.Results[i].Normal" type="number" class="form-control" />
+                                <span asp-validation-for="@Model.Results[i].Normal" class=""></span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </form>
+    </div>
+    <hr />
+}
+
+<div>
+    <div class="m-3 col-md-7">
+        <input class="form-control" placeholder="Search" id="txt" />
+    </div>
+    <table id="tbl" class="table table-bordered table-hover sticky-top">
+        <thead class="text-center sticky-top thead-dark">
+            <tr>
+                <th>Name</th>
+                <th>Normal</th>
+                <th>Gender</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.GetAlls)
+            {
+            <tr class="text-center">
+                <td class="name">@item.Name</td>
+                <td class="normal">@item.Normal</td>
+                <td class="gender">@item.Gender</td>
+                <td>
+                    <a class="btn btn-outline-light text-danger jsd" data-id="@item.Id" href="javascript:;" ><i class="bi bi-trash"></i></a>
+                    <a class="btn btn-outline-light text-dark" asp-action="EditNormal" asp-route-id="@item.Id" ><i class="bi bi-pencil-square"></i></a>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+
+
+@section Scripts{
+
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+
+    <script>
+
+        $(document).ready(function () {
+
+            $('#txt').on('keyup', function () {
+                let val = $(this).val();
+                $('#tbl tbody tr').filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(val) > -1);
+                });
+            });
+
+            $('.jsd').click(function () {
+                let btu = $(this);
+                bootbox.confirm({
+                    message: 'هل تريد حذف هذا الاسم',
+                    buttons: {
+                        confirm: {
+                            label: 'Yes',
+                            className: 'btn-danger'
+                        },
+                        cancel: {
+                            label: 'No',
+                            className: 'btn-success',
+                        }
+                    },
+                    callback: function (result) {
+                        if (result) {
+                            $.ajax({
+                                url: '/Checks/del_Normal/' + btu.data('id'),
+                                type: 'GET',
+                                success: function () {
+                                    let row = btu.parents('tr');
+                                    row.addClass('animate__animated animate__fadeOutLeft');
+                                    setTimeout(function () {
+                                        row.remove();
+                                    },1000)
+                                },
+                                error: function (e) {
+                                    console.log(e);
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+
+            $('.jsE').click(function () {
+                let id = $(this).data('id');
+                let row = $(this).parents('tr');
+                let Name = row.children('.name').text();
+                let normal = row.children('.normal').text();
+                let gender = row.children('.gender').text();
+                $('#dvr #IdNor').val(id);
+                $('#dvr #Resul_Name').val(Name);
+                $('#dvr #Resul_Normal').val(normal);
+                $('#dvr #Resul_Gender').val(gender);
+            });
+        });
+
+    </script>
+
+}

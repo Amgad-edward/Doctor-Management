@@ -1,0 +1,94 @@
+﻿@model IEnumerable<Employee>
+@{ 
+    ViewData["Title"] = "Employee";
+}
+
+<h3>Employees</h3>
+<a class="btn btn-primary" asp-action="Create"><i class="bi bi-person-plus"></i> Add</a>
+<hr />
+<section>
+    <table class="table table-bordered table-hover">
+        <thead class="thead-dark">
+            <tr class="text-center">
+                <th>Name</th>
+                <th>Titel Jop</th>
+                <th>Salary</th>
+                <th>DateStart</th>
+                <th>Time Span Work</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.TitleJop</td>
+                <td>@string.Format("{0:c}", item.Salary)</td>
+                <td>@item.datestart.ToDate()</td>
+                <td>@item.datestart.GetSpan()</td>
+                <td>
+                    <a class="btn btn-outline-light text-dark" title="Edit"  asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil-square"></i></a>
+                    <a class="btn btn-outline-light text-danger js" href="javascript:;" title="Delete @item.Name" data-id="@item.Id" data-name="@item.Name" ><i class="bi bi-trash"></i></a>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</section>
+
+
+
+@section Scripts{ 
+
+<script>
+
+    $(document).ready(function () {
+
+        $('.js').click(function () {
+
+            let id = $(this).data('id');
+            let Name = $(this).data('name');
+            let row = $(this).parents('tr');
+            bootbox.confirm({
+                message: 'هل تريد رفد الوظف ' + Name + '؟؟؟',
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-danger'
+                    },
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-success',
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: '/Employee/delete/' + id,
+                            type: 'GET',
+                            success: function () {
+                                row.addClass('animate__animated animate__backOutUp');
+                                toastr.success('Done Delete ' + Name);
+                                setTimeout(function () {
+                                    row.remove();
+                                }, 1000);
+
+                            },
+                            error: function (e) {
+                                console.log(e);
+                                toastr.error(e.responseText);
+                            }
+                        })
+                    }
+                }
+
+            });
+
+        });
+
+    });
+
+</script>
+
+}

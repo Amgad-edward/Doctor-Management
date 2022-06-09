@@ -1,0 +1,160 @@
+﻿@model CustomerView
+
+@{
+    ViewData["Title"] = $"Profile - {Model.NameCustomer}";
+}
+
+<section class="container">
+
+    <div class="card">
+        <div class="card-header row justify-content-md-between">
+            <div class="col-md-4">
+                <div class=" ">
+                    <h1><i class="bi bi-person"></i> @Hex.ConvertName(Model.NameCustomer)</h1>
+                </div>
+                <p class="text-center blockquote-footer">@Model.NameCustomer</p>
+                <div class="w-25">
+                    <a class="btn btn-outline-dark" href="#"><i class="bi bi-check2-square"></i></a>
+                </div>
+            </div>
+            <div class="display-4 text-black-50 mr-4">
+                @Hex.Age(Model.dateBirth) - Y
+            </div>
+
+        </div>
+        <div class="card-body">
+            <blockquote class="blockquote mb-0">
+                <div class="row">
+                    @if (Model.Blood != "")
+                    {
+                        <div class="col-3">
+                            <p>Boold : @Model.Blood</p>
+                        </div>
+                    }
+                    @if (Model.Informations.Any())
+                    {
+                        <div class="col-4">
+                            <div class="accordion" id="accordionExample">
+                                <div class="card">
+                                    <div class="card-header" id="headingOne">
+                                        <h2 class="mb-0">
+                                            <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                                <h3><u><em>Information</em></u></h3>
+                                            </button>
+                                        </h2>
+                                    </div>
+                                </div>
+                                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+                                    <div class="card-body">
+                                        @foreach (var item in Model.Informations)
+                                        {
+                                            <p class="text-black-50">@item.Info</p>
+                                            <hr />
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+
+                </div>
+
+                <footer class="blockquote-footer">@Model.Gender<cite title="Source Title"> - @Model.Phones</cite></footer>
+            </blockquote>
+        </div>
+    </div>
+
+    <h3 class="mt-4">Reveals</h3>
+    <hr />
+    @if (Model.Reveals.Any())
+    {
+        <div class="">
+
+            <div style="direction:rtl">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-dark text-center sticky-top">
+                        <tr>
+                            <th>تــاريخ</th>
+                            <th>نوع الكشف</th>
+                            <th>التشخيص</th>
+                            <th>العــــلاج</th>
+                            <th>فحـــوصات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                       @foreach (var item in Model.Reveals.Where(x=>x.Done).ToList())
+                       {
+                        <tr class="text-center animate__animated animate__fadeIn">
+                            <td>@item.DateReservation.ToDate()</td>
+                            <td>@Model.Prices.Find(x=>x.Id.Equals(item.Idprice)).genderprice</td>
+                            <td>@item.Diagnosis</td>
+                            <td>
+                                @if (Model.therapies.Any())
+                                {
+                                <ul>
+                                    @foreach (var T in Model.therapies.Where(x => x.Idreveal == item.ID).ToList())
+                                    {
+                                    <li>
+                                        @Model.MedicNames.Find(x => x.Id.Equals(T.Idmedic)).NameMedic
+                                        @if (T.Sub != null || T.Sub != "")
+                                        {
+                                            <p class="text-black-50">@T.Sub</p>
+                                        }
+                                    </li>
+                                    }
+                                </ul>
+                                   
+                                }
+                            </td>
+                           
+                            <td>
+                                @if (Model.ItemCheckups.Any(x=>x.Idreveal == item.ID))
+                                {
+                                <a class="" asp-action="Index" asp-controller="checks" asp-route-id="@item.ID">
+                                    @{
+                                        var show = false;
+                                        var r = Model.ItemCheckups.Where(x => x.Idreveal == item.ID).ToList();
+                                        foreach (var c in r)
+                                        {
+                                            if (c.Resulte > 0 || c.ImageReport != null)
+                                            {
+                                                show = true;
+                                            }
+                                            else
+                                                show = false;
+                                        }
+                                        if (show)
+                                        {
+                                            <i class="bi bi-check-circle text-success"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-x-circle text-danger">Not Enter Result</i>
+                                        }
+                                    }
+                                </a>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-primary" asp-action="Create" asp-controller="Checks" asp-route-id="@item.ID">Add</a>
+                                }
+                            </td>
+                        </tr>
+                       }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-secondary text-center" role="alert">
+            لا توجد كشوفات مسجلة حتى الان
+        </div>
+    }
+
+
+</section>
+
+

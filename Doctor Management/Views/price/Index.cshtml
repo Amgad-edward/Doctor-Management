@@ -1,0 +1,92 @@
+﻿@model IEnumerable<Price>
+@{ 
+    ViewData["Title"] = "Price";
+}
+
+<h2>Reveal Price</h2>
+<a class="btn btn-primary" asp-action="Create">Add</a>
+<hr />
+<section >
+    <table class="table table-bordered table-hover">
+        <thead class="thead-dark">
+            <tr class="text-center">
+                <th>Name</th>
+                <th>Price Amount</th>
+                <th>Time(Minutes)</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr class="text-center">
+                    <td>@item.genderprice</td>
+                    <td>@item.ThePrice - Egy</td>
+                    <td>@item.Time</td>
+                    <td>
+                        <a class="btn btn-outline-light text-dark" asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil-square"></i></a>
+                        <a class="btn btn-outline-light text-danger js" href="javascript:;" data-id="@item.Id" data-name="@item.genderprice"><i class="bi bi-trash"></i></a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</section>
+
+
+@section Scripts{ 
+
+
+  <script>
+
+
+
+      $(document).ready(function () {
+
+          $('.js').on('click', function () {
+
+              let id = $(this).data('id');
+              let Name = $(this).data('name');
+              let row = $(this).parents('tr');
+              bootbox.confirm({
+                  message: 'Do you Delete ' + Name + ' ??',
+                   buttons: {
+                  confirm: {
+                      label: 'Yes',
+                      className: 'btn-danger'
+                  },
+                  cancel: {
+                      label: 'No',
+                      className: 'btn-success',
+                  }
+              },
+                  callback: function (result) {
+                      if (result) {
+                          $.ajax({
+                              url: '/price/Delete/' + id,
+                              type: 'GET',
+                              success: function (data) {
+                                  row.addClass('animate__animated animate__bounceOut');
+                                  setTimeout(function () {
+                                      row.remove();
+                                  }, 1000);
+                                  toastr.success(data);
+                              },
+                              error: function (e) {
+                                  toastr.error(e.responseText);
+                                  console.log(e);
+                              }
+
+                          });
+                      }
+                  }
+              });
+
+
+          });
+
+      });
+
+  </script>
+
+}

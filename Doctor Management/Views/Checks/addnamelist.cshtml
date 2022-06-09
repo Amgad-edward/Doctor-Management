@@ -1,0 +1,117 @@
+﻿@model NamesCheck
+@{ 
+    ViewData["Title"] = "Names List";
+    var lis = ViewBag.table;
+}
+
+
+<h3>Names List of Checks</h3>
+
+<h5>Add</h5>
+<div class="row">
+    
+    <div class="col-md-7">
+      <form method="POST" asp-action="AddList">
+          <div class="form-group">
+              <label asp-for="TitelName"></label>
+              <input type="text" asp-for="TitelName" class="form-control" placeholder="The Title" />
+              <span asp-validation-for="TitelName" class="text-danger"></span>
+          </div>
+          <div class="form-group">
+              <label asp-for="Nameschiled"></label>
+              <textarea class="form-control" asp-for="Nameschiled" placeholder="@(ViewBag.admin ? "Put (,) of Names Check Entre" :"اضف السماء التحاليل وضع علامة(,)بين كل اسم")"></textarea>
+              <span asp-validation-for="Nameschiled" class="text-danger"></span>
+          </div>
+          <button type="submit" class="btn btn-primary">Add List Names</button>
+      </form>
+    </div>
+</div>
+
+<hr />
+<section>
+    <table class="table table-bordered table-hover sticky-top" id="tbl">
+        <thead class="thead-dark sticky-top">
+            <tr class="text-center">
+                <th>Titel</th>
+                <th>Names</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in lis)
+            {
+                <tr>
+                    <td>@item.TitelName</td>
+                    <td>@item.Nameschiled</td>
+                    <td>
+                        <a class="btn btn-outline-light text-danger js" data-id="@item.Id" href="javascript:;"><i class="bi bi-trash"></i></a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    
+</section>
+
+
+
+
+
+
+
+@section Scripts{ 
+
+@{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+
+ <script>
+
+     $(document).ready(function () {
+
+         $('.js').click(function () {
+             let list = $(this);
+             bootbox.confirm({
+                 message: 'Do you Delete this List ??',
+                 buttons: {
+                     confirm: {
+                         label: 'Yes',
+                         className: 'btn-danger'
+                     },
+                     cancel: {
+                         label: 'No',
+                         className: 'btn-success',
+                     },
+                    
+                 },
+                 callback: function (result) {
+                     if (result) {
+                         $.ajax({
+                             url: '/checks/deleteblist/' + list.data('id'),
+                             type: 'GET',
+                             success: function () {
+                                 let row = list.parents('tr');
+                                 row.addClass('animate__animated animate__fadeOut');
+                                 setTimeout(function () {
+                                     row.remove();
+                                 },1000)
+                             },
+                             error: function (e) {
+                                 console.log(e);
+                             }
+
+                         });
+                     }
+                 }
+
+
+             });
+
+         });
+        
+     });
+
+
+
+ </script>
+
+}

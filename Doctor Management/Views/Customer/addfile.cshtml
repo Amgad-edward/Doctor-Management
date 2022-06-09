@@ -1,0 +1,124 @@
+﻿@model FilesCustomersView
+@{
+    ViewData["Title"] = "Add Customers from file";
+}
+
+<h3>Add Files For Names Customers</h3>
+<hr />
+
+<section>
+    <div class="card">
+        <div class="card-header">
+            File
+           <i class="bi bi-card-text"></i>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Select File For Excel File Or json <i class="bi bi-card-list"></i></h5>
+            <form method="POST" asp-action="addfile" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-md-7">
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" asp-for="Filesup" accept=".xlsx,.json" />
+                            <label class="custom-file-label">Select File</label>
+                            <span asp-validation-for="Filesup" class="text-danger"></span>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-50 mt-3">Add Customers</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</section>
+
+<div class="mt-2" id="dv" >
+    <hr />
+    <h5 id="n">Customer Name In File</h5>
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr class="text-center">
+                <th>Name</th>
+                <th>Phone</th>
+                <th>DateBirth</th>
+                <th>Gender</th>
+                <th>blood</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+
+@section Scripts{
+
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    
+    <script>
+
+        $(document).ready(function () {
+
+            $('#dv').hide();
+            $('#Filesup').change(function () {
+                let filename = this.files[0].name;
+                $('label').text(filename);
+                let type = filename.split('.').pop();
+                if (type === 'xlsx') {
+                    readXlsxFile(this.files[0]).then(function (data) {
+
+                        if (data.length > 0) {
+                            let tb = $('table tbody');
+                            tb.children().remove();
+                            for (let i = 0; i < data.length; i++) {
+                                let row = "<tr class='text-center'><td>" + data[i][0] + "</td>" +
+                                    "<td>" + data[i][1] + "</td>" +
+                                    "<td>" + data[i][2] + "</td>" +
+                                    "<td>" + data[i][3] + "</td>" +
+                                    "<td>" + data[i][4] + "</td></tr>";
+                                tb.append(row);
+                            }
+                            $('#dv').show();
+                            $('label').append(" <i class='bi bi-check-circle text-success'></i>");
+                            $('#n').text('Customer Names In File ' + filename);
+                        }
+
+                    });
+                }
+                else {
+                    let f = window.URL.createObjectURL(this.files[0]);
+                    $.ajax({
+                        url: f,
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function (data) {
+                            if (data.length > 0) {
+                                let tb = $('table tbody');
+                                tb.children().remove();
+                                for (let i = 0; i < data.length; i++) {
+                                    let row = "<tr class='text-center'><td>" + data[i].name + "</td>" +
+                                        "<td>" + data[i].phone + "</td>" +
+                                        "<td>" + data[i].date + "</td>" +
+                                        "<td>" + data[i].gender + "</td>" +
+                                        "<td>" + data[i].blood + "</td></tr>";
+                                    tb.append(row);
+                                }
+                                $('#dv').show();
+                                $('label').append(" <i class='bi bi-check-circle text-success'></i>");
+                                $('#n').text('Customer Names In File ' + filename);
+                            }
+                        },
+                        error: function (e) {
+                            console.log(e);
+                        }
+                    });
+                }
+
+            });
+
+        });
+
+
+    </script>
+
+}

@@ -1,0 +1,342 @@
+﻿
+@model OutView
+@{ 
+    ViewData["Title"] = "قائمة الحجز";
+}
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#mess">Send To Doctor</button>
+<div style="direction: rtl; text-align:right;margin-top:3%" >
+    <div class="card text-dark bg-light mb-3" style="max-width: 72rem;">
+        <div class="card-header text-center display-4">Reveal Today(حجز اليوم) </div>
+        <div class="card-body">
+            <input type="text" id="txtid" hidden />
+            <div class="row justify-content-between">
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <label>اسم العميل</label>
+                        <div class="row">
+                            <div class="col-md-10"><input type="text" id="txtName" list="names" class="form-control" /></div>
+                            <div class="col-md-1 mt-1 mr-0" id="ds"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row" id="dg">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>نوع الحجز</label>
+                        <select asp-items="Model.Prices" id="priceid" class="form-control">
+                            <option selected>اختر نوع الحجز</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-2 mt-4">
+                    <div class="form-check">
+                        <div class="">
+                            <input type="checkbox" id="Runis" class="form-check-input" />
+                            <label class="form-check-label mr-3" for="Runis">حجز مستعجل</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <div class="mt-4"></div>
+                        <button type="button" id="btuenter" class="btn btn-primary mt-2 w-75">حجز</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <div class="alert alert-success" role="alert" style="direction:rtl;text-align:center">
+        <span class="">دخول: <span id="enter"></span></span>
+    </div>
+</div>
+<hr />
+<section style="direction:rtl">
+    <table id="tbl" class="table table-bordered table-hover ">
+        <thead class="thead-dark text-center">
+            <tr>
+                <th>رقم الحجز</th>
+                <th>اسم العميل</th>
+                <th>نوع الحجز</th>
+                <th>تاريخ الحجز</th>
+                <th>مدة الانتظار</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+</section>
+
+
+
+<!-- List Name Customer --->
+<datalist id="names">
+    @foreach (var item in Model.Customers)
+    {
+        <option value="@($"{item.NameCustomer}.{item.ID}")">@item.NameCustomer</option>
+    }
+</datalist>
+
+<div class="modal fade" id="mess" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">New message</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                    <div class="form-group">
+                        <label for="message-text" class="col-form-label">Message:</label>
+                        <textarea class="form-control" id="message-text"  maxlength="150"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="btuCloseing" data-dismiss="modal">Close</button>
+                        <button type="button" id="btumess" class="btn btn-primary">Send message</button>
+                    </div>
+            </div>
+            
+            
+        </div>
+        
+    </div>
+</div>
+
+
+@section Scripts{ 
+
+  <script>
+
+      var autio = new Audio();
+      autio.src = "/sound/small-bell-ring-01a.mp3";
+      var Username ="Out" ;
+      var Name;
+      var TimeHour = 0;
+      var Ti = 0;
+      $(document).ready(function () {
+
+          $('#dg').hide();
+          setInterval(function () {
+              getdatar();
+              NameEnter();
+              ++Ti;
+              if (Ti == 59) {
+                  TimeHour += 1;
+                  Ti = 0;
+              }
+          }, 1200);
+
+          $('#btumess').click(function () {
+
+              let messg = $('#message-text').val();
+              if (messg != "") {
+
+                  $.ajax({
+                      url: '/Message/SendToDoctor',
+                      type: 'POST',
+                      data: { text_message: messg, from: Username },
+                      success: function () {
+                          toastr.success('تم ارسال الرسالة الى الدكتور');
+                          $('#btuCloseing').click();
+                      },
+                      error: function (e) {
+                          console.log(e.responseText);
+                      }
+                  });
+
+              }
+
+          });
+          $('#btuenter').click(function () {
+               revealCustomer();
+          
+          });
+
+          $('#txtName').keyup(function (e) {
+              if (e.keyCode == 13) {
+                  let value = $(this);
+                  let id = value.val().split('.').pop();
+                  let Name = value.val().split('.')[0];
+                  $('#txtid').val(id);
+                  value.val(Name);
+                  if (id != "")
+                      $('#dg').show();
+              }
+              else {
+                  $('#txtid').val("");
+                  $('#dg').hide();
+              }
+          });
+
+          $('#Rdate').datepicker({
+              format: 'yyyy-mm-dd',
+              timepicker: true,
+              datepicker: true,
+              autoclose: true,
+              startDate: new Date(),
+          });
+      });
+
+      function NameEnter() {
+          let lastname = $('#enter').text();
+          if ($('#enter').text() == "")
+              lastname = null;
+
+          if (lastname != Name) {
+              $('#enter').text(Name);
+              autio.play();
+              toastr.success("Enter : " + Name);
+          }
+
+      }//id of reveals enter
+
+      /////Functions
+      function revealCustomer() {
+
+          let idcus = $('#txtid');
+          let idprice = $('#priceid');
+          let Run = window.Runis;
+
+          if (idcus.val() == "" || idcus.val() == null ) {
+              toastr.error('برجاء اختيار عميل مسجل مسبقا');
+          }
+          else if (idprice.val() == "" || idprice.val() == null) {
+              toastr.error('برجاء اختيار نوع الكشف');
+          }
+          else {
+              $.ajax({
+
+                  url: '/Home/RevealCustomers',
+                  type: 'POST',
+                  data: { id: idcus.val(), idp: idprice.val(),  run: Run.checked },
+                  success: function (data) {
+                      if (data != "") {
+                          toastr.error(data);
+                      }
+                      else {
+                          toastr.success('تم اضافة الحجز بنجاح');
+                          idcus.val("")
+                          idprice.select(0);
+                          Run.checked = false;
+                          $('#txtName').val("");
+                          $('#dg').hide();
+                      }
+                     
+                  },
+
+                  error: function (e) {
+                      toastr.error(e.responseText);
+                  }
+
+
+              });
+          }
+      }
+ 
+      function getdatar() {
+
+          var staticid;
+          $.ajax({
+              url: '/Home/GetID',
+              type: 'GET',
+              success: function (id) {
+                  staticid = id;
+              }, error: function (e) {
+                  console.log(e);
+              }
+          });
+          let tb = $('#tbl tbody');
+
+          $.ajax({
+              url: '/Home/Getreveals',
+              type: 'GET',
+              dataType: 'json',
+              contentType: "application/json;charset=utf-8",
+              success: function (data) {
+                  tb.children().remove();
+                  let TimeAll = 0;
+                  for (let i = 0; i < data.length; i++) {
+                      TimeAll += data[i].price.time;
+                      let row = "<tr class='text-center " + (staticid == data[i].id? "bg-success":"") + "'><td>" + data[i].number + "</td>" +
+                          "<td><a href='/Home/ShowProfile/" + data[i].customer.id +"'>" + data[i].customer.nameCustomer + "</a></td>" +
+                          "<td>" + data[i].price.genderprice + "</td>" + "<td>" + data[i].dateReservation + "</td>" +
+                          "<td> " + (staticid != data[i].id ? TheTime((TimeAll - data[i].price.time)) : "Enter") + " </td>" +
+                          "<td>" + (staticid == data[i].id ? "<i class='bi bi-box-arrow-in-right text-ligth'></i>" : "<a class='btn btn-outline-light text-danger' data-name='" + data[i].customer.nameCustomer + "' href='javascript:;' onclick='delreveal(this," + data[i].id + ");'> <i class='bi bi-trash'></i> </a>") + "</td></tr>";
+                      
+                      tb.append(row);
+                      if (staticid == data[i].id) {
+                          Name = data[i].customer.nameCustomer;
+                      }
+                  }
+                  
+                 
+              },
+              error: function (e) {
+                  console.log(e.responseText)
+              }
+          });
+
+      }
+
+      function TheTime(time) {
+
+          time = time - TimeHour;
+          if (time >= 1 && time < 60) {
+              return (time) + " Minutes";
+          }
+          else if (time >= 60) {
+              let val = time / 60;
+              return val.toFixed(1) + " Hour";
+          }
+          else {
+              return "Enter";
+          }
+      }
+
+      function delreveal(item, id) {
+
+          bootbox.confirm({
+              message: 'عل تريد الغاء حجز : ' + $(item).data('name'),
+              buttons: {
+                  confirm: {
+                      label: 'Yes',
+                      className: 'btn-danger'
+                  },
+                  cancel: {
+                      label: 'No',
+                      className: 'btn-success',
+                  }
+              },
+              callback: function (result) {
+
+                  if (result) {
+
+                      $.ajax({
+                          url: '/Home/DeleteReveal/' + id,
+                          type: 'GET',
+                          success: function () {
+                              toastr.success('تم حذف الحجز بنجاح');
+                          },
+                          error: function (e) {
+                              console.log(e);
+                          }
+
+                      });
+
+                  }
+
+              }
+          });
+      }
+
+  </script>
+
+}

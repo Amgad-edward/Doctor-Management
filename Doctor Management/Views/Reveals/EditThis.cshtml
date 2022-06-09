@@ -1,0 +1,285 @@
+﻿@model EditRevealView
+@{ 
+    ViewData["Title"] = $"Edit Reveal {Model.Reveal.customer.NameCustomer}";
+}
+
+<div class="card">
+    <div class="card-body">
+        <h4>Reveal : @Model.Reveal.customer.NameCustomer</h4>
+        <hr />
+        <p class="text-black-50">Date : @Model.Reveal.DateReservation.ToDate()</p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4 mt-2">
+        <input id="ID" value="@Model.Reveal.ID" hidden />
+        <input id="idcust" value="@Model.Reveal.Idcustomer" hidden />
+        <div class="form-group">
+            <label>Diagnosis</label>
+            <input type="text" id="txtDiag" value="@Model.Reveal.Diagnosis" class="form-control" />
+        </div>
+        <button type="button" id="btnsave" class="btn btn-primary">Save Change</button>
+    </div>
+</div>
+<hr />
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <h6>Medics</h6>
+            <div class="row mb-3">
+                <input id="txtmedic" class="form-control w-50" list="m" placeholder="Medic Name" />
+                <div class="col-3">
+                    <input type="text" id="txtsub" class="form-control"  placeholder="Sub"/>
+                </div>
+                <div class="col-1"><button type="button" id="btumedic" class="btn btn-outline-primary">Add</button></div>
+            </div>
+            <table id="tblmedic" class="table table-bordered table-hover">
+                <thead class="">
+                    <tr>
+                        <th>Medic Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Reveal.Therapies)
+                    {
+                        <tr>
+                            <td>
+                                <h6>@item.medicName.NameMedic</h6>
+                                <p class="text-black-50">@item.Sub</p>
+                            </td>
+                            <td>
+                                <button type="button" title="Delete" class="btn btn-outline-danger" onclick="del(this,@(item.Id));"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<hr />
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <h6>Checks</h6>
+            <div class="row mb-3">
+                <div class="col-7">
+                    <input type="text" id="checkname" class="form-control" list="c" placeholder="Check Names" />
+                </div>
+                <div class="col-3">
+                    <button type="button" class="btn btn-outline-primary" id="btuaddcheck">Add</button>
+                </div>
+            </div>
+            <table id="tblcheck" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Name Check</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Reveal.ItemCheckups)
+                    {
+                        <tr>
+                            <td>@item.NameCheck</td>
+                            <td>
+                                <button type="button" class="btn btn-outline-danger" onclick="delcheck(this,@(item.Id));"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<datalist id="c">
+    @foreach (var item in Model.namesChecks)
+    {
+        <option value="@item.Id">@item.TitelName</option>
+    }
+</datalist>
+<datalist id="m">
+    @foreach (var item in Model.medicNames)
+    {
+        <option value="@item.Id">@item.NameMedic</option>
+    }
+</datalist>
+
+
+@section Scripts{ 
+
+    <script>
+
+        var ID;
+        $(document).ready(function () {
+            ID = $('#ID').val();
+
+            $('#btumedic').click(function () {
+                AddTherapy();
+            });
+
+            $('#btuaddcheck').click(function () {
+                addcheck();
+            });
+
+            $('#btnsave').on('click', function () {
+
+                let Digs = $('#txtDiag').val();
+                if (Digs != "") {
+                    $.ajax({
+                        url: '/Reveals/EditReveals',
+                        type: 'POST',
+                        data: { id: ID, dia: Digs },
+                        success: function () {
+                            toastr.success('Done Edit');
+                        },
+                        error: function (e) {
+                            console.log(e);
+                        }
+
+                    });
+                }
+                else {
+                    toastr.error('ادخل التشخيص لامكن الحفظ بدونها');
+                }
+            });
+
+
+        });
+
+        function del(row, id) {
+            let r = $(row).parents('tr');
+            $.ajax({
+                url: '/Reveals/deletemedic/' + id,
+                type: 'GET',
+                success: function () {
+                    r.remove();
+                    toastr.success('Done Delete Medic');
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+
+            });
+        }
+
+        function delcheck(row, id) {
+            let r = $(row).parents('tr');
+            $.ajax({
+                url: '/Reveals/deletecheck/' + id,
+                type: 'GET',
+                success: function () {
+                    r.remove();
+                    toastr.success('Delete Check is Done');
+                },
+                error: function (e) {
+                    console.log(e.responseText);
+                }
+
+
+            });
+        }
+
+        function GetTherapyouto() {
+
+            $.ajax({
+                url: '/Home/getTherapy/' + ID,
+                type: 'GET',
+                dataType: 'Json',
+                success: function (data) {
+                    let tbl = $('#tblmedic tbody');
+                    tbl.children().remove();
+
+                    for (let i = 0; i < data.length; i++) {
+                        let row = "<tr>" +
+                            "<td> <h5>" + data[i].medicName.nameMedic + "</h5> <p class='text-black-50'>" + data[i].sub + "</p></td>" +
+                            "<td>" + '<button type="button" title="Delete" class="btn btn-outline-danger" onclick="del(this,' + data[i].id + ');"><i class="bi bi-trash"></i></button>' +
+                            "</td ></tr > ";
+                        tbl.append(row);
+
+                    }
+
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+
+        function getchecks() {
+
+            let tbl = $('#tblcheck tbody');
+
+            $.ajax({
+                url: '/Home/getchecks/' + ID,
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    if (data.length > 0) {
+                        tbl.children().remove();
+                        for (let i = 0; i < data.length; i++) {
+                            let row = "<tr class='text-center'><td>" + data[i].nameCheck + "</td>" +
+                                "<td><a class='btn btn-outline-danger' href='javascript:;' onclick='delcheck(this," + data[i].id + ")' ><i class='bi bi-trash'></i> </a></td></tr>";
+                            tbl.append(row);
+                        }
+
+                    }
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+
+            });
+
+        }
+
+        function addcheck() {
+            let namecheck = $('#checkname');
+            let idC = $('#idcust').val();
+            let idR = ID;
+            if (namecheck != "") {
+
+                $.ajax({
+
+                    url: '/Home/addcheck',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: { idcus: idC, idRev: idR, name: namecheck.val() },
+                    success: function (data) {
+                        getchecks();
+                        toastr.success('Done Add');
+                    },
+                    error: function (e) {
+                        console.log(e);
+                        toastr.error('Not Add');
+                    }
+
+                });
+            }
+        }
+
+        function AddTherapy() {
+            let txt_1 = $('#txtmedic').val();
+            let txt_2 = $('#txtsub').val();
+            let txt_idrev = ID;
+            if (txt_1 != "") {
+                $.ajax({
+                    url: '/Home/AddTherapy',
+                    type: 'POST',
+                    data: { id: txt_1, sub: txt_2, idrev: txt_idrev, name: txt_1 },
+                    dataType: 'json',
+                    success: function (data) {
+                        GetTherapyouto();
+                    },
+                    error: function (e) {
+                        console.length(e)
+                    }
+                });
+            }
+        }
+
+    </script>
+ 
+}

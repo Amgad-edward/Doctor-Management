@@ -1,0 +1,185 @@
+﻿@model Revealsedit
+@{
+    ViewData["Title"] = "Get Reveals";
+  
+}
+
+<h3>Get Reveals (حجز)</h3>
+<hr />
+<section>
+  <div class="row">
+      <div class="col-md-7">
+          <form method="POST" asp-action="GetReveals">
+              <input asp-for="Number" hidden />
+              <input asp-for="Idcustomer" hidden />
+              <div class="form-group">
+                  <label asp-for="NameCustomer"></label>
+                  <input type="text" asp-for="NameCustomer" list="NamesofCustomer" class="form-control" />
+                  <span id="lblName" asp-validation-for="NameCustomer"></span>
+              </div>
+              <div class="row">
+                  <div class="form-group col-8">
+                      <label asp-for="DateReservation"></label>
+                      <input type="date" asp-for="DateReservation" class="form-control" />
+                      <input asp-for="Date" type="text" hidden />
+                      <span id="lbl" style="direction:rtl;text-align:center" class="text-success"></span>
+                  </div>
+                  <div class="col-4 mt-4">
+                      <button type="button" id="btuselect" class="btn btn-success mt-2">اختيار اقرب ميعاد منساب</button>
+                  </div>
+              </div>
+              <div class="form-group">
+                  <label asp-for="Idprice"></label>
+                  <select asp-for="Idprice" asp-items="@ViewBag.list" class="form-control"></select>
+                  <span asp-validation-for="Idprice"></span>
+              </div>
+              <div class="form-check">
+                  <input type="checkbox" asp-for="run" class="form-check-input" />
+                  <label asp-for="run" class="form-check-label"></label>
+              </div>
+              <button type="submit" class="btn btn-primary w-50 mt-2">حجز</button>
+          </form>
+      </div>
+      
+  </div>
+</section>
+
+<datalist id="NamesofCustomer">
+    @foreach (var name in ViewBag.customers)
+    {
+        <option>@name</option>
+    }
+</datalist>
+
+@section Scripts{ 
+
+@{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+<script>
+
+    $(document).ready(function () {
+
+        $('#btuselect').on('click', function () {
+            let txtdate = $('#DateReservation');
+            let lbl = $('#lbl');
+            let num = $('#Number');
+            let hdate = $('#Date');
+            $.ajax({
+
+                url: '/Reveals/Getdate',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    if (data != "no") {
+                       
+                        lbl.removeClass();
+                        lbl.addClass('text-success');
+                        txtdate.attr('type', 'text');
+                        txtdate.val(data.date);
+                        hdate.val(data.date);
+                        lbl.text(data.text);
+                        num.val(data.number);
+                    }
+                    else {
+                        lbl.removeClass();
+                        lbl.addClass('text-danger');
+                        txtdate.attr('type', 'date');
+                        num.val("");
+                        lbl.text('لا توجد حجوزات مناسبة لمدة 15 يوما');
+                    }
+                },
+                error: function (e) {
+                    console.log(e.responseText);
+                }
+
+            });
+
+
+        });
+
+        $('#DateReservation').keyup(function (e) {
+            if (e.keyCode == 8) {
+                $(this).val("");
+                $(this).attr('type', 'date');
+                $('#lbl').text('');
+                $('#Number').val("");
+                $('#Date').val("");
+            }
+        });
+
+        $('#DateReservation').change(function () {
+            let dateof = $(this).val();
+            $.ajax({
+                url: '/Reveals/getday',
+                type: 'POST',
+                data: { date: dateof },
+                success: function (data) {
+                    if (data != "") {
+                        $('#lbl').removeClass();
+                        if (data.number < 10 && data.number > 0) {
+                            $('#lbl').addClass('text-success');
+                        }
+                        else if (data.number <= 25 && data.number > 0) {
+                            $('#lbl').addClass('text-info');
+                        }
+                        else {
+                            $('#lbl').addClass('text-danger');
+                        }
+                        if (data.number > 0) {
+                            $('#lbl').text(data.text);
+                            $('#Number').val(data.number);
+                        }
+                        else {
+                            $('#lbl').text(data.text);
+                            $('#Number').val("");
+                        }
+                    }
+                    else {
+                        toastr.error('لا يمكن الحجز فى هذا اليوم');
+                        $('#lbl').text('لا يمكن الحجز فى هذا اليوم');
+                        $('#Number').val("");
+                    }
+                },
+                error: function (e) {
+                    console.log(e.responseText);
+                }
+            });
+        });
+
+        $('#NameCustomer').on('keyup', function () {
+            let value = $(this).val();
+            let lbl = $('#lblName');
+            let id = $('#Idcustomer');
+            $.ajax({
+                url: '/Reveals/Getname',
+                type: 'POST',
+                data: { name: value },
+                success: function (data) {
+                    if (data != "") {
+                        lbl.removeClass();
+                        lbl.addClass('text-success');
+                        id.val(data);
+                        lbl.text('الاسم مسجل');
+                    }
+                    else {
+                        lbl.removeClass();
+                        lbl.addClass('text-danger');
+                        id.val("");
+                        lbl.text('الاسم غير مسجل');
+                    }
+                },
+                error: function (e) {
+                    console.log(e.responseText);
+                }
+            });
+
+
+        });
+
+     
+
+    });
+
+</script>
+
+}

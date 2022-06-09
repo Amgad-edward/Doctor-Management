@@ -1,0 +1,132 @@
+﻿
+@{
+    ViewData["Title"] = "Chart";
+    List<SelectListItem> list = ViewBag.list;
+}
+
+<h3>Charts</h3>
+
+<div class="card">
+    <div class="card-header">
+        Charts OF
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Select Chart View</h5>
+        <div class="row">
+            <div class="col-md-7">
+                <div class="form-group">
+                    <label>Select</label>
+                    <select class="form-control" id="cbx" >
+                        <option selected>------</option>
+                        @foreach (var item in list)
+                        {
+                            <option value="@item.Value" >@item.Text</option>
+                        }
+                    </select>
+                   
+                </div>
+            </div>
+            <div class="col-md-4 mt-2">
+                <button type="button" id="btuget" class="btn btn-primary mt-4">Show</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="dv" style="max-width:850px" >
+    <canvas id="myChart"></canvas>
+</div>
+
+
+
+
+@section Scripts{ 
+    
+    <script>
+
+        
+            $(document).ready(function () {
+
+                $('#btuget').on('click', function () {
+                    let val = $('#cbx').val();
+                    let dv = $('#dv');
+
+                $.ajax({
+
+                    url: '/Chart/Get/' + val,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+
+                        if (data.length > 0 && data != 'Not' && data != "") {
+                            dv.children().remove();
+                            dv.append('<canvas id="myChart"></canvas>');
+                            let Names = Array();
+                            let values = Array();
+                            for (let i = 0; i < data.length; i++) {
+                                Names.push(data[i].name);
+                                values.push(data[i].value);
+                            }
+                            Charts(Names, values, "");
+                            dv.show();
+                        }
+                        else {
+                            dv.hide();
+                        }
+                       
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+                
+            });
+
+            });
+
+
+
+        function Charts(Names , values , Of) {
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Names,
+                    datasets: [{
+                        label: Of,
+                        data: values,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+
+    </script>
+
+
+}

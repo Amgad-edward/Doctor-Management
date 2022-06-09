@@ -1,0 +1,56 @@
+﻿@model IEnumerable<MedicName>
+@{ 
+    ViewData["Title"] = "Medic Names";
+}
+
+<h3>Medic Names</h3>
+<a class="btn btn-primary" asp-action="Create"><i class="bi bi-file-earmark-plus"></i> Add</a>
+<a class="btn btn-outline-primary" asp-action="addfile"><i class="bi bi-file-earmark"></i> Add File Names</a>
+<hr />
+<section>
+    <div class="row">
+        <div class="col-md-4">
+            <input type="text" id="txt" class="form-control" placeholder="Search" />
+        </div>
+    </div>
+    <table class="table table-bordered table-hover mt-2">
+        <thead class="thead-dark sticky-top">
+            <tr class="text-center">
+                <th>Names</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr class="text-center">
+                    <td>@item.NameMedic</td>
+                    <td>
+                        <a class="btn btn-outline-light text-dark" asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil-square"></i></a>
+                        <a class="btn btn-outline-light text-danger" ><i class="bi bi-trash"></i></a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</section>
+
+
+@section Scripts{ 
+
+
+  <script>
+      $(document).ready(function () {
+
+          $('#txt').keyup(function () {
+              let value = $(this).val();
+              $('table tbody tr').filter(function () {
+                  $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+              });
+          });
+
+      });
+  </script>
+
+
+}

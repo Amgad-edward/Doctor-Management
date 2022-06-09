@@ -1,0 +1,90 @@
+﻿@model FilesCustomersView
+@{ 
+    ViewData["Title"] = "Add File Names";
+}
+
+<h3>Attach File Excel Or Json</h3>
+
+<form method="POST" asp-action="addfile" enctype="multipart/form-data">
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="custom-file">
+                <input type="file" class="custom-file-input" asp-for="Filesup" accept=".xlsx,.json" />
+                <label class="custom-file-label">Select File</label>
+                <span asp-validation-for="Filesup" class=""></span>
+            </div>
+            <button type="submit" class="btn btn-primary mt-2 mb-2">UpLoad</button>
+        </div>
+    </div>
+</form>
+
+<section id="dv">
+    <table id="tbl" class="table table-bordered table-hover">
+        <thead class="thead-light sticky-top">
+            <tr>
+                <th>Names</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+</section>
+
+@section Scripts{ 
+
+@{  await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+
+ <script>
+
+     $(document).ready(function () {
+         $('input').change(function () {
+             let tb = $('#tbl tbody');
+             let file = window.URL.createObjectURL(this.files[0]);
+             let fileName = this.files[0].name;
+             $('label').text(fileName);
+             let Ex = fileName.split('.').pop();
+             if (Ex === 'xlsx') {
+                 readXlsxFile(this.files[0]).then(function (data) {
+                     if (data.length > 0) {
+                         tb.children().remove();
+                         for (let i = 0; i < data.length; i++) {
+                             let row = "<tr><td>" + data[i][0] + "</td></tr>";
+                             tb.append(row);
+                         }
+                     }
+                 });
+             }
+             else if (Ex === 'json') {
+                 $.ajax({
+                     url: file,
+                     type: 'GET',
+                     success: function (data) {
+                         if (data.length > 0) {
+                             tb.children().remove();
+                             for (let i = 0; i < data.length; i++) {
+                                 let row = "<tr><td>" + data[i].name + "</td></tr>";
+                                 tb.append(row);
+                             }
+                         }
+                     },
+                     error: function (e) {
+                         console.log(e.responseText);
+                     }
+
+                 });
+             }
+             
+
+         });
+     });
+
+     function Table(data) {
+
+     }
+
+
+ </script>
+
+}

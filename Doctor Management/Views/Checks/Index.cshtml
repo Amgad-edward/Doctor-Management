@@ -1,0 +1,145 @@
+﻿@model CheckUPView
+@{
+    ViewData["Title"] = $"تحليل {Model.customerName}";
+}
+
+<h2 class="text-muted">Check up</h2>
+<a class="btn btn-primary" asp-action="Create" asp-route-id="@Model.ItemCheckups[0].Idreveal">
+    Add
+    <i class="bi bi-file-earmark-plus"></i>
+</a>
+<div class="row mt-5 justify-content-between">
+    <div class="col-md-5">
+        <div style="direction:rtl">
+            <span class="d-block p-2 bg-dark text-white">@Model.customerName</span>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div>
+            <span class="d-block p-2 bg-dark text-white">@Model.date.ToDate()</span>
+        </div>
+    </div>
+</div>
+<hr />
+<section class="row">
+    <input id="count" value="@Model.ItemCheckups.Count" hidden data-idcus="@Model.ItemCheckups[0].Idcustomer" />
+    <div class="col-md-8">
+        @foreach (var item in Model.ItemCheckups)
+        {
+            double? normal = null;
+            var M = Model.ResultNormal.Where(x => x.Name == item.NameCheck && (x.Gender == ViewBag.gender || x.Gender.Contains(ViewBag.gender))).FirstOrDefault();
+
+            if(M is not null)
+            {
+                normal = M.Normal;
+            }
+
+            <div class="row justify-content-md-between par animate__animated animate__lightSpeedInLeft">
+
+                <div class="col-md-8">
+                    <div class="row">
+                        <div class="col-2">
+                            <a href="@item.ImageReport.showimage("jpg")" target="_blank"><img alt="Image" src="@Hex.showimage(item.ImageReport)" class="img-thumbnail ml-1" style="width:100px" /></a><br />
+                        </div>
+                        <div class="col-5">
+                            <h3 class="text-black-50">@item.NameCheck</h3>
+                            @if (normal.HasValue)
+                            {
+                                <h5 class="@(item.Resulte <= normal.Value ? "text-success" :"text-danger")">Result : @item.Resulte</h5>
+                            }
+                            else
+                            {
+                                <h5>Result : @item.Resulte</h5>
+                            }
+                        </div>
+                        @if (normal.HasValue)
+                        {
+                    <div class="col-1">
+                        @if (item.Resulte == normal.Value)
+                        {
+                            <span class="text-success"><i class="bi bi-check-lg"></i></span>
+                        }
+                        else if (item.Resulte < normal.Value)
+                        {
+                            <span class="text-success"><i class="bi bi-arrow-down"></i></span>
+                        }
+                        else
+                        {
+                            <span class="text-danger"><i class="bi bi-arrow-up"></i></span>
+                        }
+                    </div>
+                        }
+                    </div>
+
+                </div>
+                <div>
+                    <a class="btn btn-outline-light mt-3 text-dark" title="تعديل هذا التعديل او ضافة النتيجة" asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil-square"></i></a>
+                    <a class="btn btn-outline-light text-danger mt-3 D" data-id="@item.Id" data-name="@item.NameCheck" title="حذف" href="javascript:;">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </div>
+
+            </div>
+            <hr />
+            
+        }
+    </div>
+</section>
+
+
+@section Scripts{ 
+
+<script>
+
+    $(document).ready(function () {
+
+        $('.D').click(function () {
+            var id = $(this).data('id');
+            var name = $(this).data('name');
+            var item = $(this).parents('.par');
+            bootbox.confirm({
+                message: 'هل تريد حذف ' + name,
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-danger'
+                    },
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-success',
+                    }
+                },
+                callback: function (reslut) {
+
+                    if (reslut) {
+
+                        $.ajax({
+                            url: '/Checks/delete/' + id,
+                            type: 'GET',
+                            success: function () {
+                                item.removeClass('animate__lightSpeedInLeft');
+                                item.addClass('animate__bounceOut');
+                                setInterval(function () {
+                                    item.remove();
+                                }, 1000);
+                                toastr.success('تم الحذف بنجاح');
+                               
+                            },
+                            error: function (e) {
+                                console.log(e.responseText);
+                            }
+
+                        });
+
+                    }
+
+                }
+
+            });
+
+        });
+    });
+
+</script>
+   
+}

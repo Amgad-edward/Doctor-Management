@@ -1,0 +1,38 @@
+﻿@model FixedView
+@{ 
+    ViewData["Titel"] = $"{(Model.IsCreate ? "Add" : "Edit")} Item Pays Fixed";
+}
+
+<h4>@(Model.IsCreate ? "Add New" : $"Edit {Model.itemName}") Item Pays Fixed</h4>
+<hr />
+
+<form method="POST" asp-action="@(Model.IsCreate ? "Addfixed" : "Editfixe")">
+    <div class="row">
+        <div class="col-md-7">
+            <input asp-for="Id" hidden />
+            <div class="form-group">
+                <label asp-for="itemName"></label>
+                <input type="text" class="form-control" asp-for="itemName" placeholder="Name item" maxlength="40" />
+                <span asp-validation-for="itemName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FixsedAmmount"></label>
+                <input type="number" class="form-control" asp-for="FixsedAmmount" min="1" />
+                <span asp-validation-for="FixsedAmmount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Timespan"></label>
+                <input type="number" class="form-control" asp-for="Timespan" min="1" />
+            </div>
+            <button type="submit" class="btn btn-outline-primary mt-2">Save</button>
+            <a class="btn btn-outline-secondary mt-2" asp-action="Fixed">Cancel</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts{ 
+
+@{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+}
+

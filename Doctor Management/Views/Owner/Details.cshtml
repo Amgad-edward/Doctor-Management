@@ -1,0 +1,23 @@
+﻿@model Owner
+@{
+    ViewData["Title"] = $"Owner {Model.NameOwner}";
+}
+
+<h1><em>Owner</em></h1>
+<h5><u>Your Information</u></h5>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+      <h4>Name: @Model.NameOwner</h4>
+      <p class="text-black-50">Title: @Model.Titel</p>
+      <h3>Address: @Model.Addres</h3>
+      <h4>Phones: @Model.Phones</h4>
+    </div>
+    <div class="col-md-4">
+        <label>Logo</label>
+        <img class="img-thumbnail" style="width:100px" src="@Model.Logo.showimage()" />
+    </div>
+    <div class="col-md-1">
+        <a class="btn btn-outline-light text-dark" asp-action="Edits" title="Edit Information" asp-route-id="@Model.Id"><i class="bi bi-pencil-square"></i></a>
+    </div>
+</div>

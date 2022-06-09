@@ -1,0 +1,104 @@
+﻿@model LogingView
+@{
+    ViewData["Title"] = "Log in";
+}
+
+
+
+<div class="text-center">
+    <h3 class="display-4">
+        Welcome In Application
+        <span class="badge badge-dark">
+            @if (Hex.GetActive())
+            {
+            <span class="text-white">Active</span>
+            }
+            else if (ViewBag.Try)
+            {
+            <span class="text-info">Try</span>
+            }
+            else
+            {
+            <span class="text-danger">Not Active</span>
+            }
+        </span>
+    </h3>
+    <hr />
+</div>
+
+@if (Hex.GetActive() || ViewBag.Try)
+{
+<section class="container">
+    <form method="post" asp-action="Index">
+
+        <div class="card w-auto">
+            <div class="card-header">
+                Log in
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Log in</h5>
+                <div class="row justify-content-between">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="UserName"></label>
+                            <input type="text" class="form-control" asp-for="UserName" />
+                            <span asp-validation-for="UserName" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Password"></label>
+                            <div class="row">
+                                <div class="col-10">
+                                    <input type="password" class="form-control" asp-for="Password" />
+                                </div>
+                                <div class="col-2">
+                                    <button type="button" id="btu" class="btn btn-outline-light text-dark"><i class="bi bi-eye-slash-fill"></i></button>
+                                </div>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            Log in
+                            <i class="bi bi-box-arrow-in-right"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <img src="~/image/intro.jpg" class="img-thumbnail mt-1" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</section>
+
+}
+
+@section Scripts{
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+
+    <script>
+
+        $(document).ready(function () {
+
+            $('#btu').click(function () {
+                let b = $('#Password');
+
+                if (b.attr('type') === 'password') {
+                    $(this).children('i').removeClass('bi-eye-slash-fill');
+                    $(this).children('i').addClass('bi-eye-fill');
+                    b.attr('type', 'text');
+                }
+                else {
+                    $(this).children('i').removeClass('bi-eye-fill');
+                    $(this).children('i').addClass('bi-eye-slash-fill');
+                    b.attr('type', 'password');
+
+                }
+
+            });
+
+        });
+
+    </script>
+
+}

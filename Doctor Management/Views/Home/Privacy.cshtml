@@ -1,0 +1,973 @@
+﻿@model PrivacyView
+
+@{
+    ViewData["Title"] = "Reveal";
+}
+
+@if (Model.Reveal != null)
+{
+    <div class="text-center">
+        <i class="bi bi-stopwatch display-4"></i> <span class="display-4" id="lbltime">00:00:00</span>
+        <button type="button" id="btustop" title="Mute" class="btn btn-outline-light text-dark"><i class="bi bi-volume-down"></i></button>
+    </div>
+    <div class="card text-center">
+        <div class="card-header">
+            <span class="display-4">@Model.Reveal.customer.NameCustomer.ConvertName().ToUpper()</span>
+            <p class="mb-0">@Model.Reveal.customer.NameCustomer</p>
+        </div>
+
+        <div class="card-body">
+            <a class="btn btn-outline-secondary" title="To Print Page" target="_blank" asp-action="print" asp-route-id="@Model.Reveal.ID"><i class="bi bi-printer-fill"></i></a>
+            <button type="button" class="btn btn-outline-info" title="Add Information To @(Model.Reveal.customer.NameCustomer)" data-toggle="modal" data-target="#exampleModal">
+                <i class="bi bi-info"></i>
+            </button>
+            <a title="Average All Check @(Model.Reveal.customer.NameCustomer)" class="btn btn-outline-info" target="_blank" asp-route-id="@Model.Reveal.Idcustomer" asp-action="Average" asp-controller="Checks">
+                <i class="bi bi-bar-chart"></i>
+            </a>
+            <a title="View Check @(Model.Reveal.customer.NameCustomer)" class="btn btn-outline-success" target="_blank" asp-route-id="@Model.Reveal.Idcustomer" asp-action="ShowCustomerCheck" asp-controller="Checks">
+                <i class="bi bi-check2-circle"></i>
+            </a>
+            <a title="All Reveal Of @(Model.Reveal.customer.NameCustomer)" class="btn btn-outline-primary" target="_blank" asp-action="ShowProfile" asp-route-id="@Model.Reveal.customer.ID">
+                <i class="bi bi-person-lines-fill"></i>
+            </a>
+            @if (Model.Surgeries.Any())
+            {
+                <a title="Surgery @(Model.Reveal.customer.NameCustomer)" class="btn btn-outline-secondary" data-toggle="modal" href="javascript:;" data-target="#surgery">
+                    <i class="bi bi-person-check"></i>
+                </a>
+            }
+            @if (Model.BlackList == null)
+            {
+                <button type="button" id="bt_black" class="btn btn-dark" title="Add @(Model.Reveal.customer.NameCustomer) To Black List" data-toggle="modal" data-target="#black">
+                    <i class="bi bi-person-bounding-box"></i>
+                </button>
+            }
+            <h5 class="card-title text-black-50 mt-3">Gender: @Model.Reveal.customer.Gender  -  Age: @Model.Reveal.customer.dateBirth.GetAge()  -  Blood: @Model.Reveal.customer.Blood </h5>
+            <div class="row">
+                <div class="col-md-4">
+                    <form method="POST" asp-action="Privacy" id="frm">
+                        <input asp-for="Reveal.ID" hidden />
+                        <input asp-for="Reveal.Idcustomer" hidden />
+                        <input asp-for="Reveal.Idprice" hidden />
+                        <input asp-for="Reveal.Number" hidden />
+                        <input asp-for="Reveal.DateReservation" hidden />
+                        <div class="form-group">
+                            <em><label asp-for="Reveal.Diagnosis"></label></em>
+                            <input type="text" list="Dig" asp-for="Reveal.Diagnosis" data-id="@Model.Reveal.customer.ID" class="form-control" maxlength="70" placeholder="Diagnosis" />
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" asp-for="Re_reveal" class="form-check-input" />
+                            <label asp-for="Re_reveal" class="form-check-label"></label>
+                        </div>
+                        <div id="dv" hidden>
+                            <div class="row justify-content-between">
+                                <div class="col-12">
+                                    <select class="form-control" asp-items="@Model.Price" asp-for="idprice">
+                                        <option>اختر نوع الاعادة</option>
+                                    </select>
+                                    <div class="form-group mt-1">
+                                        <label>Count days:</label>
+                                        <input type="number" asp-for="CountdayesRe" max="30" min="0" class="form-control" />
+                                        <div style="direction:rtl;text-align:right">
+                                            <span id="lbldate"></span>
+                                        </div>
+                                    </div>
+                                    <button type="button" id="btuaddRe_revael" class="btn btn-secondary mt-1" data-idcus="@Model.Reveal.customer.ID">Add Re-Reveal</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-3">Done Reveal @Model.Reveal.customer.NameCustomer</button>
+                    </form>
+
+                    @if (Model.BlackList != null)
+                    {
+                        <div class="mt-3 BList">
+                            <button type="button" title="Remove at BlackList" data-id="@Model.BlackList.Id" class="close text-danger dblack" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            <h5 class="text-dark"><u>Black List</u></h5>
+                            <p class="text-black-50">@Model.BlackList.Report</p>
+                        </div>
+                    }
+                    @if (Model.Info.Count > 0)
+                    {
+                        <div class="mt-1" style="max-height:200px;overflow-x:hidden;overflow-y:auto">
+                            <h3><em>Information</em></h3>
+
+                            @foreach (var item in Model.Info)
+                            {
+                                <div class="pi">
+                                    <button type="button" data-id="@item.Id" class="close text-danger dinfo" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    <p class="text-black-50">@item.Info</p>
+                                    <hr />
+                                </div>
+                            }
+                        </div>
+                    }
+
+
+
+                </div>
+                <div class="col-md-4">
+                    <em><label>Add Medics</label></em>
+                    <input class="form-control " list="listther" data-id="@Model.Reveal.ID" type="text" id="txtth" placeholder="Therapy" />
+                    <div class="row">
+                        <input class="col-md-8 form-control ml-3 mt-2" type="text" id="txtsub" placeholder="Sub" />
+                        <a class="col-md-2 btn btn-info ml-3 mt-2 w-25" id="btuAddThe">Add</a>
+                    </div>
+                    <div style="max-height:200px; overflow-x: hidden; overflow-y: auto">
+                        <table id="tblth" class="table table-bordered mt-2">
+                            <thead class="thead-dark sticky-top">
+                                <tr>
+                                    <th>Name Medics</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+                <div class="col-md-4">
+                    <em><label>Add Checkup</label></em>
+                    <div class="row">
+                        <div class="col-md-10">
+                            <input type="text" list="lst" data-idcus="@Model.Reveal.customer.ID" data-idrev="@Model.Reveal.ID" id="txtcheckup" class="form-control" placeholder="Add check Names" />
+                        </div>
+                        <div class="col-md-1">
+                            <button class="btn btn-light" id="btucheck">Add</button>
+                        </div>
+                    </div>
+                    <div class="sticky-top">
+                        <table id="tblcheck" class="table table-bordered table-hover mt-2">
+                            <thead class="sticky-top thead-light">
+                                <tr class="text-center">
+                                    <th>Check</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="card-footer text-muted">
+            @if (Model.lastrevale != null)
+            {
+                <small>Last Reveal </small><em><a id="btulastreveal" data-toggle="modal" data-target="#lastreveal" href="#" class="btn btn-link">@Model.lastrevale.DateReservation.GetSpan()</a></em>
+            }
+            else
+            {
+                <small>First</small>
+            }
+        </div>
+    </div>
+
+    <!--------------- DataList ------------>
+    <datalist id="listther">
+        @foreach (var item in Model.MedicNames)
+        {
+            <option value="@item.Id">@item.NameMedic</option>
+        }
+    </datalist>
+    <datalist id="lst">
+        @foreach (var item in Model.Names)
+        {
+            <option value="@item.Id">@item.TitelName</option>
+        }
+        @foreach (var item in Model.ResultNamesCheck)
+        {
+            <option value="@item">@item</option>
+        }
+    </datalist>
+
+    <datalist id="Dig">
+        @foreach (var item in Model.Dia)
+        {
+            <option>@item</option>
+        }
+    </datalist>
+
+
+
+    <!--Model Add Info--->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add Infromation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-11">
+                            <div class="form-group">
+                                <label>Information</label>
+                                <textarea class="form-control" id="txtinfo" maxlength="200" placeholder="Enter Infromatio"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="closeinfo" data-dismiss="modal">Close</button>
+                    <button type="button" data-id="@Model.Reveal.customer.ID" id="btuaddinfo" class="btn btn-primary">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Model BlackList--->
+    <div class="modal fade" id="black" tabindex="-1" aria-labelledby="blackLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="blackLabel">Add '@(Model.Reveal.customer.NameCustomer)' To Balck List</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-11">
+                            <div class="form-group">
+                                <label>Report</label>
+                                <textarea class="form-control" id="txtreport" maxlength="100" placeholder="Enter Report"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="closeblack" data-dismiss="modal">Close</button>
+                    <button type="button" data-id="@Model.Reveal.Idcustomer" id="btuaddblack" class="btn btn-dark">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Last-R  ------------------------>
+    <div class="modal fade" id="lastreveal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Last Reveal</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    @if (Model.lastrevale != null)
+                    {
+                        <div class="row">
+                            <div class="col-12">
+                                <label>@Model.lastrevale.DateReservation.ToDate()</label>
+                                <p><em>Diagnosis</em> : <span class="text-black-50">@Model.lastrevale.Diagnosis</span></p>
+                                <hr />
+                                <h6>medic</h6>
+                                <ul>
+                                    @foreach (var item in Model.lastrevale.Therapies)
+                                    {
+                                        <li>@Model.MedicNames.Find(x => x.Id == item.Idmedic).NameMedic</li>
+                                    }
+                                </ul>
+                                <hr />
+                                <h6>check</h6>
+                                <ul>
+                                    @foreach (var item in Model.lastrevale.ItemCheckups)
+                                    {
+                                        <li>
+                                            @item.NameCheck : <span>@(item.ImageReport != null ? $"<a href='{item.ImageReport.showimage()}'>Show</a>" : item.Resulte  )</span>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--- Model Nomination --->
+    <div class="modal fade" id="nom" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Suggested Medications</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div id="listnom" class="modal-body overflow-auto">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btuAddnom" type="button" class="btn btn-primary">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--- Model Surgery  --->
+    <div class="modal fade" id="surgery" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Surgery @(Model.Reveal.customer.NameCustomer)</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                   @foreach (var item in Model.Surgeries)
+                   {
+                       <div class="row">
+                           <h3><em>@item.NameSurgery</em></h3>
+                            <p class="text-black-50"><em>@item.DateTime.ToDate()</em></p>
+                           <div class="col-md-1">
+                               <h4>Is Done :</h4>
+                           </div>
+                           <div class="col-md-2">
+                               @if (item.Done)
+                               {
+                                   <i class="bi bi-check-lg text-success"></i>
+                               }
+                               else
+                               {
+                                   <span>Not Done</span>
+                               }
+                           </div>
+                       </div>
+                       <hr />
+                   }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+else
+{
+    <div class="alert alert-dark" role="alert">
+        No Reveal Today
+    </div>
+}
+
+<hr />
+
+<h4><u><em>Reveals List Today</em></u></h4>
+<section style="direction:rtl" class="col-12">
+
+    <table id="tblR" class="table table-bordered table-hover">
+        <thead class="thead-dark">
+            <tr class="text-center">
+                <th>رقم الدور</th>
+                <th>تاريخ الحجز</th>
+                <th>الاســــم</th>
+                <th>النــــوع</th>
+                <th>دخول</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+</section>
+
+
+
+
+@section Scripts{
+
+
+    <script>
+
+        function test() {
+            let rows = $('#listnom').children('.row');
+            for (var i = 0; i < rows.length; i++) {
+                let lbl = $(rows[i]).children('label').data('id');
+                let text = $(rows[i]).children('input[type=text]').val();
+                let check = $(rows[i]).children('input[type=checkbox]').prop('checked');
+
+
+            }
+
+        }
+
+        function writeData(data) {
+            let list = $('#listnom');
+            list.children().remove();
+            for (let i = 0; i < data.length; i++) {
+                let row = "<div class='row justify-content-between p-4'>" +
+                    "<label class='col-3' data-id='" + data[i].idmedic + "'>" + data[i].medicName.nameMedic + "</label>" +
+                    "<input type='text' class='col-5 form-control' value='" + data[i].sub + "' placeholder='Sub' />" +
+                    "<input type='checkbox' class='col-1' onchange='setchecknom(this);' />" +
+                    "<button type='button' class='close mr-3' onclick='removenom(this);' aria-label='Close'>" +
+                    "<span aria-hidden='true'>&times;</span>" + "</button>" + "</div>" + "<hr/>";
+                list.append(row);
+            }
+            if (list.children().length > 0) {
+                $('#nom').modal(true);
+            }
+        }
+
+        function setchecknom(m) {
+            let check = $(m).prop('checked');
+            let row = $(m).parent();
+            if (check) {
+                row.addClass('bg-success');
+            }
+            else {
+                row.removeClass('bg-success');
+            }
+        }
+
+        function removenom(m) {
+            let r = $(m).parent();
+            r.remove();
+        }
+
+        var sacnde = 0;
+        var minte = 0;
+        var hour = 0;
+        var Times = @(Model.Reveal is not null ? Model.Reveal.price.Time : -1);
+        var Bell = new Audio();
+        Bell.src = "/sound/bell.mp3";
+        var soundPlay = true;
+        $(document).ready(function () {
+
+            $('#listnom').children().remove();
+            $('#btuAddnom').on('click', function () {
+                let rows = $('#listnom').children('.row');
+                let Data = [];
+                if (rows.length > 0) {
+                    for (var i = 0; i < rows.length; i++) {
+                        let idmedic = $(rows[i]).children('label').data('id');
+                        let text = $(rows[i]).children('input[type=text]').val();
+                        let check = $(rows[i]).children('input[type=checkbox]').prop('checked');
+                        if (check) {
+                            Data.push({ "medic": idmedic, "sub": text });
+                        }
+
+                    }
+                    if (Data.length > 0) {
+                        $.ajax({
+                            url: '/Home/getNomData',
+                            type: 'POST',
+                            data: { Get: Data },
+                            success: function () {
+                                GetTherapyouto();
+                                $('#nom').modal('hide');
+                            },
+                            error: function (e) {
+                                console.log(e.responseText)
+                            }
+                        });
+                    }
+                }
+            });
+            $('#Reveal_Diagnosis').keydown(function (e) {
+                let b = true;
+                if (e.keyCode == 13) {
+                    let value = $(this).val();
+                    let idcustomer = $(this).data('id');
+                    $.ajax({
+                        url: '/Home/Nomination',
+                        type: 'POST',
+                        data: { D: value, idcus: idcustomer },
+                        success: function (data) {
+                            if (data.length > 0) {
+                                console.log(data);
+                                writeData(data);
+                            }
+                        },
+                        error: function (e) {
+                            console.log(e.responseText)
+                        }
+                    });
+                    b = false;
+                }
+                return b;
+            });
+
+            $('#lbltime').removeClass('text-danger');
+            if (Times > 0) {
+                var settime = setInterval(function () {
+
+                    sacnde++;
+                    if (sacnde == 60) {
+                        minte++;
+                        sacnde = 0;
+                    }
+                    if (minte == 60) {
+                        hour++;
+                        minte = 0;
+                    }
+                    let All = (hour * 60) + minte;
+                    if (All < Times) {
+                        $('#lbltime').text(hour + ':' + minte + ':' + sacnde);
+                    }
+                    else {
+                        $('#lbltime').addClass('text-danger');
+                        $('#lbltime').text(hour + ':' + minte + ':' + sacnde);
+                        if (soundPlay) {
+                            Bell.play();
+                        }
+
+                    }
+
+                }, 1000);
+            }
+
+            $('#btustop').click(function () {
+                if (soundPlay) {
+                    soundPlay = false;
+                    $(this).children().remove();
+                    $(this).append('<i class="bi bi-volume-mute"></i>');
+                }
+                else {
+                    soundPlay = true;
+                    $(this).children().remove();
+                    $(this).append('<i class="bi bi-volume-down"></i>');
+                }
+            });
+            GetTherapyouto();///get Table of MedicNames
+            getchecks();
+            setInterval(function () {
+                Getdata();
+            }, 1300);//get data Reveal
+
+
+            $('#txtth').keyup(function (e) {
+                if (e.keyCode == 13) {
+                    if ($(this).val() != "")
+                        $('#txtsub').focus();
+                }
+            });
+
+            $('#txtsub').keyup(function (e) {
+                if (e.keyCode == 13) {
+                    if ($('#txtth').val() != "") {
+                        AddTherapy();
+                        $('#txtth').val("");
+                        $('#txtsub').val("");
+                    }
+                }
+            });
+
+            $('#btuAddThe').click(function () {
+                AddTherapy();
+                $('#txtth').val("");
+                $('#txtsub').val("");
+            });//Event click Add new theraspy
+
+            $('#btuaddinfo').click(function () {
+                let idcustomer = $(this).data('id');
+                let txt = $('#txtinfo').val();
+                if (txt != "") {
+
+                    $.ajax({
+                        url: '/Home/addinfo',
+                        type: 'POST',
+                        data: { id: idcustomer, info: txt },
+                        success: function () {
+                            toastr.success("تم اضافة المعلومات بنجاح");
+                            txt = "";
+                            $('#closeinfo').click();
+
+                        },
+                        error: function (e) {
+                            console.log(e);
+                        }
+
+                    });
+
+                }
+                else {
+                    toastr.error('برجاء اكتب المعلومات المراد اضافتها');
+                }
+
+            });
+
+            $('.dinfo').click(function () {
+                let idinfo = $(this).data('id');
+                let pr = $(this).parents('.pi');
+                bootbox.confirm({
+                    message: 'Do you delete this info??',
+                    buttons: {
+                        confirm: {
+                            label: 'Yes',
+                            className: 'btn-danger'
+                        },
+                        cancel: {
+                            label: 'No',
+                            className: 'btn-success',
+                        }
+                    },
+                    callback: function (results) {
+                        if (results) {
+
+                            $.ajax({
+                                url: '/Home/deleteinfo/' + idinfo,
+                                type: 'GET',
+                                success: function () {
+                                    pr.remove();
+                                    toastr.success('Done Delete Info');
+                                },
+                                error: function (e) {
+                                    console.log(e);
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+
+            $('.form-check input[type=checkbox]').change(function () {
+
+                if ($(this).prop('checked')) {
+                    $('#dv').attr('hidden', false);
+                }
+                else {
+                    $('#dv').attr('hidden', true);
+                }
+            }) //add Re-reveal
+
+            $('#btuaddRe_revael').click(function () {
+
+                let count = $('#CountdayesRe').val();
+                let idc = $(this).data('idcus');
+                let idp = $('#idprice').val();
+                if (idp == "اختر نوع الاعادة") {
+                    toastr.error("برجاء اختار نوع كشف الاعادة");
+                }
+                else if (count <= 0) {
+                    toastr.error("برجاء ادخل عدد الايام التى تريد اعادة الكشف  فى تاريخها");
+                }
+                else {
+                    $.ajax({
+
+                        url: '/Home/AddRe_reveval',
+                        type: 'POST',
+                        data: { idcus: idc, idprice: idp, thecount: count },
+                        success: function () {
+                            toastr.success("تم اضافة اعادة الكشف بنجاح");
+                            $('#dv').hide();
+                        },
+                        error: function (e) {
+                            console.log(e);
+                            toastr.error(e.responseText);
+                        }
+
+                    });
+                }
+
+
+            });///add Re-Reveal
+
+            $('#CountdayesRe').on('change', function () {
+
+                let lbl = $('#lbldate');
+                let countday = $(this).val();
+                if (countday > 0) {
+
+                    $.ajax({
+                        url: '/Home/getdatelist',
+                        type: 'Post',
+                        data: { count: countday },
+                        dataType: 'json',
+                        success: function (data) {
+                            lbl.removeClass();
+                            lbl.text("");
+                            if (data.count < 10) {
+                                lbl.addClass('text-success');
+                                lbl.text(data.mess);
+                            }
+                            else if (data.count >= 10) {
+                                lbl.addClass('text-info');
+                                lbl.text(data.mess);
+                            }
+                            else {
+                                lbl.addClass('text-danger');
+                                lbl.text(data.mess);
+                            }
+
+                        },
+                        error: function (e) {
+                            console.log(e.responseText);
+                        }
+
+                    });
+
+                }
+                else {
+                    lbl.text("");
+                }
+
+            });
+            $('#CountdayesRe').keydown(function (e) {
+                let bool = true;
+                if (e.keyCode == 13) {
+                    bool = false;
+                }
+                return bool;
+            });
+
+            $('#btucheck').click(function () {
+                addcheck();
+            });
+
+            $('#btuaddblack').click(function () {
+                let Id = $(this).data('id');
+                let txt = $('#txtreport').val();
+                if (Id != null && txt != "") {
+
+                    $.ajax({
+                        url: '/Home/AddToblacklist',
+                        type: 'POST',
+                        data: { id: Id, report: txt },
+                        success: function () {
+                            toastr.success('Done Add to BlackList');
+                            $('#closeblack').click();
+                        },
+                        error: function (e) {
+                            console.log(e);
+                        }
+                    });
+                }
+            });///addbalcklist
+
+            $('.dblack').click(function () {
+                let id = $(this).data('id');
+                let d = $(this).parents('.BList');
+                bootbox.confirm({
+                    message: 'Are you delete This customer blackList??',
+                    buttons: {
+                        confirm: {
+                            label: 'Yes',
+                            className: 'btn-danger'
+                        },
+                        cancel: {
+                            label: 'No',
+                            className: 'btn-success',
+                        }
+                    },
+                    callback: function (reslut) {
+                        if (reslut) {
+                            $.ajax({
+                                url: '/Home/Del_Blacklist/' + id,
+                                type: 'GET',
+                                success: function () {
+
+                                    d.addClass('animate__animated animate__backOutUp');
+                                    setTimeout(function () {
+                                        d.remove();
+
+                                    },1000)
+                                },
+                                error: function (e) {
+                                    console.log(e);
+                                }
+                            });
+                        }
+                    }
+
+                });
+            }); // del Blacklist
+
+
+        });
+
+
+
+        function DeleteThe(item, id) {
+
+            $.ajax({
+                url: '/Home/DeleteMedicTherapy/' + id,
+                type: 'GET',
+                success: function () {
+                    let row = $(item).parents('tr');
+                    row.remove();
+                    toastr.success('Done Remove Medic');
+                },
+                error: function (e) {
+                    console.log(e.responseText);
+                }
+            });
+        }
+
+        var Customer = null;
+        var cid;
+        var revealid;
+
+        function AddTherapy() {
+            let txt_1 = $('#txtth').val();
+            let txt_2 = $('#txtsub').val();
+            let txt_idrev = $('#txtth').data('id');
+            let tbl = $('#tblth tbody');
+            if (txt_1 != "") {
+                $.ajax({
+                    url: '/Home/AddTherapy',
+                    type: 'POST',
+                    data: { id: txt_1, sub: txt_2, idrev: txt_idrev, name: txt_1 },
+                    dataType: 'json',
+                    success: function (data) {
+                        GetTherapyouto();
+                    },
+                    error: function (e) {
+                        console.length(e)
+                    }
+                });
+            }
+        }
+
+        function GetTherapyouto() {
+            let idthisreveal = $('#txtth').data('id');
+            if (idthisreveal != null) {
+                $.ajax({
+                    url: '/Home/getTherapy/' + idthisreveal,
+                    type: 'GET',
+                    dataType: 'Json',
+                    success: function (data) {
+                        let tbl = $('#tblth tbody');
+                        tbl.children().remove();
+
+                        for (let i = 0; i < data.length; i++) {
+                            let row = "<tr class='text-center'>" +
+                                "<td> <h5>" + data[i].medicName.nameMedic + "</h5> <p class='text-black-50'>" + data[i].sub + "</p></td>" +
+                                "<td> <a class='btn btn-outline-light text-danger' onclick='DeleteThe(this," + data[i].id + ");'  data-id='" + data[i].id + "' href='javascript:;' ><i class='bi bi-trash' ></i></a></td></tr>";
+                            tbl.append(row);
+
+                        }
+
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+            }
+        }
+
+        function Getdata() {
+            var staticid;
+            $.ajax({
+                url: '/Home/GetID',
+                type: 'GET',
+                success: function (id) {
+                    staticid = id;
+                   // console.log(id);
+                }, error: function (e) {
+                    console.log(e);
+                }
+            });
+            var table = $('#tblR tbody');
+            $.ajax({
+                url: '/Home/Getreveals',
+                type: 'GET',
+                dataType: 'json',
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    table.children().remove();
+
+                    for (let i = 0; i < data.length; i++) {
+
+                        let row = "<tr class='text-center " + (staticid == data[i].id ? 'bg-success' : '') + "'>" + "<td>" + data[i].number + "</td>" +
+                            "<td>" + data[i].dateReservation + "</td>" + "<td>" + data[i].customer.nameCustomer + "</td>" +
+                            "<td>" + data[i].price.genderprice + "</td>" +
+                            "<td>" + (staticid != data[i].id ? "<a class='btn btn-info' href='/Home/Getone/" + data[i].id + "'>Enter</a>" : "<i class='bi bi-box-arrow-in-right'></i>") + "</td>";
+                        table.append(row);
+                    }
+                },
+                error: function (e) {
+                    console.log("err");
+                }
+            });
+        }
+
+        function del_check(item, id) {
+
+            $.ajax({
+                url: '/Home/Deletecheck/' + id,
+                type: 'GET',
+                success: function () {
+                    $(item).parents('tr').remove();
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+
+        }
+
+        function getchecks() {
+            let idr = $('#txtcheckup').data('idrev');
+            let tbl = $('#tblcheck tbody');
+
+            $.ajax({
+                url: '/Home/getchecks/' + idr,
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    if (data.length > 0) {
+                        tbl.children().remove();
+                        for (let i = 0; i < data.length; i++) {
+                            let row = "<tr class='text-center'><td>" + data[i].nameCheck + "</td>" +
+                                "<td><a class='btn btn-outline-light text-danger' href='javascript:;' onclick='del_check(this," + data[i].id + ")' ><i class='bi bi-trash'></i> </a></td></tr>";
+                            tbl.append(row);
+                        }
+
+                    }
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+
+            });
+
+        }
+
+        function addcheck() {
+            let namecheck = $('#txtcheckup');
+            let idC = namecheck.data('idcus');
+            let idR = namecheck.data('idrev');
+            if (namecheck != "") {
+
+                $.ajax({
+
+                    url: '/Home/addcheck',
+                    type: 'POST',
+                    dataType:'json',
+                    data: { idcus: idC, idRev: idR, name: namecheck.val() },
+                    success: function (data) {
+                        getchecks();
+                        toastr.success('Done Add');
+                    },
+                    error: function (e) {
+                        console.log(e);
+                        toastr.error('Not Add');
+                    }
+
+                });
+            }
+        }
+
+
+    </script>
+
+}
+
+

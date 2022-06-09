@@ -1,0 +1,81 @@
+﻿@model Revealsedit
+@{
+    ViewData["Title"] = $"Edit - {Model.Name}";
+}
+
+<h3>Edit Reveal @Model.Name</h3>
+<hr />
+<form method="POST" asp-action="Edit">
+    <div class="row">
+
+        <input asp-for="ID" hidden />
+        <input asp-for="Idcustomer" hidden />
+        <input asp-for="Number" hidden />
+        <input asp-for="Diagnosis" hidden />
+        @TempData["date"] =@Model.DateReservation;
+        <div class="col-md-7">
+            <div class="form-group">
+                <label>تــاريخ الحجز</label>
+                <input asp-for="DateReservation" type="date" required class="form-control" />
+                <div style="direction:rtl;text-align:center">
+                    <span id="lbl"></span>
+                </div>
+            </div>
+            <div class="form-check">
+                <input asp-for="run" id="runs" type="checkbox" class="form-check-input" />
+                <label class="form-check-label" for="runs">كشف مستعجل</label>
+            </div>
+            <div class="form-group">
+                <label>نوع الكشف</label>
+                <select asp-for="Idprice" asp-items="@ViewBag.list" class="form-control"></select>
+            </div>
+            <button type="submit" class="btn btn-outline-primary">Save Change</button>
+        </div>
+    </div>
+</form>
+
+@section Scripts{ 
+
+
+ <script>
+
+
+
+     $(document).ready(function () {
+
+         $('#DateReservation').change(function () {
+
+             let Date = $(this).val();
+             let lbl = $('#lbl');
+             $.ajax({
+                 url: '/Reveals/GetreveaslRoll',
+                 type: 'POST',
+                 data: { date: Date },
+                 success: function (data) {
+                     if (data.value <= 10) {
+                         lbl.removeClass();
+                         lbl.addClass('text-success');
+                         lbl.text(data.text + ' اليوم مناسب');
+                     }
+                     else if (data.value <= 25) {
+                         lbl.removeClass();
+                         lbl.addClass('text-info');
+                         lbl.text(data.text + ' اليوم مزدحم');
+                     }
+                     else {
+                         lbl.removeClass();
+                         lbl.addClass('text-danger');
+                         lbl.text(data.text + ' مزدحم جدا');
+                     }
+                 },
+                 error: function (e) {
+                     console.log(e.responseText);
+                 }
+             });
+         });
+
+     });
+
+ </script>
+
+}
